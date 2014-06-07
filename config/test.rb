@@ -4,5 +4,5 @@ Deployinator.issue_tracker = proc do |issue|
   "https://github.com/example/repo/issues/#{issue}"
 end
 
-Deployinator.default_stack = "demo"
+Deployinator.default_stack = "smart"
 Deployinator.protocol = "http"
