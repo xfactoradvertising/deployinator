@@ -9,6 +9,14 @@ module Deployinator
         "/tmp"
       end
 
+      def site_root
+        '/var/www/sites'
+      end
+
+      def site_path
+        "#{site_root}/#{stack}"
+      end
+
       def smart_git_checkout_path
         "#{checkout_root}/#{stack}"
       end
@@ -41,7 +49,14 @@ module Deployinator
         build = smart_head_build
 
         begin
-          run_cmd %Q{echo "insert deploy commands here"}
+          # TODO check for zip files in app/views or app/controllers (or app/* ?) and fail..these break composer dump-autoload
+          # sync files to final destination
+          run_cmd %Q{rsync -av #{smart_git_checkout_path} #{site_path}}
+          # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
+            # maybe set CAP_CHOWN for deployinator?
+          run_cmd %Q{chmod 777 #{site_path}/files}
+          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
