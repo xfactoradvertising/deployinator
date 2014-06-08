@@ -51,7 +51,7 @@ module Deployinator
         begin
           # TODO check for zip files in app/views or app/controllers (or app/* ?) and fail..these break composer dump-autoload
           # sync files to final destination
-          run_cmd %Q{rsync -av #{smart_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
           run_cmd %Q{chmod 777 #{site_path}/files}
