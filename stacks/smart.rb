@@ -39,11 +39,6 @@ module Deployinator
         git_cmd = old_build ? :git_freshen_clone : :github_clone
         send(git_cmd, stack, 'sh -c')
 
-        # "/Users/jguice/Development/xfactor/deployinator/helpers.rb:66:in `run_cmd'", "/Users/jguice/Development/xfactor/deployinator/helpers/git.rb:27:in `git_clone'", "/Users/jguice/Development/xfactor/deployinator/helpers/git.rb:23:in `github_clone'", "/Users/jguice/Development/xfactor/deployinator/stacks/smart.rb:32:in `smart_dev'", 
-
-        # Running sh -c 'cd /tmp && git clone https://github.com/xfactoradvertising/smart.git smart'
-
-
         git_bump_version stack, ''
 
         build = smart_head_build
@@ -65,30 +60,6 @@ module Deployinator
 
         log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
 
-        #log_and_stream "Fill in the smart_production method in stacks/smart.rb!<br>"
-
-        # log the deploy
-        #log_and_shout :old_build => environments[0][:current_build].call, :build => environments[0][:next_build].call
-
-        # demo version of above
-        # old_build = Version.get_build(demo_production_version)
-
-        # git_cmd = old_build ? :git_freshen_clone : :github_clone
-        # send(git_cmd, stack, "sh -c")
-
-        # git_bump_version stack, ""
-
-        # build = demo_head_build
-
-        # begin
-        #   run_cmd %Q{echo "ssh host do_something"}
-        #   log_and_stream "Done!<br>"
-        # rescue
-        #   log_and_stream "Failed!<br>"
-        # end
-
-        # # log this deploy / timing
-        # log_and_shout(:old_build => old_build, :build => build, :send_email => true)
       end
 
       def smart_environments
