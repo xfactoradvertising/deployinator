@@ -48,7 +48,6 @@ module Deployinator
           run_cmd %Q{rsync -av --exclude='.git/' --exclude='.gitignore' #{mygoutstudy_git_checkout_path}/ #{site_path}}
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
-          run_cmd %Q{chmod 777 #{site_path}/files}
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
