@@ -73,6 +73,7 @@ module Deployinator
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
+        end
       end
 
       def combat_report_environments
