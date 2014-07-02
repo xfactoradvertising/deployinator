@@ -5,6 +5,14 @@ module Deployinator
         "git@github.com:xfactoradvertising/combat-report.git"
       end
 
+      def prod_user
+        'ubuntu'
+      end
+
+      def prod_ip
+        '10.248.3.116'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -27,6 +35,10 @@ module Deployinator
 
       def combat_report_dev_build
         Version.get_build(combat_report_dev_version)
+      end
+
+      def combat_report_prod_version
+        %x{ssh #{prod_user}@#{prod_ip} 'cat #{site_path}/version.txt'}
       end
 
       def combat_report_head_build
@@ -55,6 +67,14 @@ module Deployinator
 
       end
 
+      def combat_report_prod(options={})
+        begin
+          run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+      end
+
       def combat_report_environments
         [
           {
@@ -63,7 +83,14 @@ module Deployinator
             :current_version => combat_report_dev_version,
             :current_build => combat_report_dev_build,
             :next_build => combat_report_head_build
-          }
+          },
+          {
+            :name => 'prod',
+            :method => 'combat_report_prod',
+            :current_version => combat_report_prod_version,
+            :current_build => combat_report_dev_version,
+            :next_build => combat_report_dev_build
+          }         
         ]
       end
     end
