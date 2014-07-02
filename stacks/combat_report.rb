@@ -41,6 +41,10 @@ module Deployinator
         %x{ssh #{prod_user}@#{prod_ip} 'cat #{site_path}/version.txt'}
       end
 
+      def combat_report_prod_build
+        Version.get_build(combat_report_prod_version)
+      end
+
       def combat_report_head_build
         %x{git ls-remote #{combat_report_git_repo_url} HEAD | cut -c1-7}.chomp
       end
@@ -89,7 +93,7 @@ module Deployinator
             :name => 'prod',
             :method => 'combat_report_prod',
             :current_version => combat_report_prod_version,
-            :current_build => combat_report_dev_version,
+            :current_build => combat_report_prod_build,
             :next_build => combat_report_dev_build
           }         
         ]
