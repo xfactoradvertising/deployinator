@@ -104,7 +104,7 @@ module Deployinator
       end
       options = newoptions
 
-      options[:env] ||= "PROD"
+      options[:env] ||= "DEV"
       options[:nice_env] = nicify_env(options[:env])
       options[:user] ||= @username
       options[:start] = @start_time unless options[:start] || ! @start_time
