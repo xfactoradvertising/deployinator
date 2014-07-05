@@ -67,11 +67,14 @@ module Deployinator
           log_and_stream "Failed!<br>"
         end
 
-        log_and_shout(:old_build => old_build, :build => build, :env => 'DEV', :send_email => false) # TODO make email true
+        log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
 
       end
 
       def combat_report_prod(options={})
+        old_build = Version.get_build(combat_report_prod_version)
+        build = combat_report_dev_build
+
         begin
           run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
           log_and_stream "Done!<br>"
