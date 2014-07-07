@@ -25,9 +25,9 @@ module Deployinator
         %x{cat #{smart_git_checkout_path}/version.txt}
       end
 
-      def smart_prod_version
-        %x{ssh 54.245.225.193 "cat #{smart_git_checkout_path}/version.txt"}
-      end
+      # def smart_prod_version
+      #   %x{ssh 54.245.225.193 "cat #{smart_git_checkout_path}/version.txt"}
+      # end
 
       def smart_dev_build
         Version.get_build(smart_dev_version)
@@ -74,14 +74,14 @@ module Deployinator
             :current_version => smart_dev_version,
             :current_build => smart_dev_build,
             :next_build => smart_head_build
-          },
-          {
-            :name => 'prod',
-            :method => 'smart_prod',
-            :current_version => smart_prod_version,
-            :current_build => smart_prod_build,
-            :next_build => smart_dev_build
-          }          
+          }#,
+          # {
+          #   :name => 'prod',
+          #   :method => 'smart_prod',
+          #   :current_version => smart_prod_version,
+          #   :current_build => smart_prod_build,
+          #   :next_build => smart_dev_build
+          # }          
         ]
       end
     end
