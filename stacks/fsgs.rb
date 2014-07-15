@@ -5,6 +5,14 @@ module Deployinator
         "git@github.com:xfactoradvertising/com.fsgsresearch.git"
       end
 
+      def prod_user
+        'ubuntu'
+      end
+
+      def prod_ip
+        '10.248.3.116'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -27,6 +35,14 @@ module Deployinator
 
       def fsgs_dev_build
         Version.get_build(fsgs_dev_version)
+      end
+
+      def fsgs_prod_version
+        %x{ssh #{prod_user}@#{prod_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def fsgs_prod_build
+        Version.get_build(fsgs_prod_version)
       end
 
       def fsgs_head_build
@@ -61,6 +77,20 @@ module Deployinator
 
       end
 
+      def fsgs_prod(options={})
+        old_build = Version.get_build(fsgs_prod_version)
+        build = fsgs_dev_build
+
+        begin
+          run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
+
       def fsgs_environments
         [
           {
@@ -69,7 +99,14 @@ module Deployinator
             :current_version => fsgs_dev_version,
             :current_build => fsgs_dev_build,
             :next_build => fsgs_head_build
-          }
+          },
+          {
+            :name => 'prod',
+            :method => 'fsgs_prod',
+            :current_version => fsgs_prod_version,
+            :current_build => fsgs_prod_build,
+            :next_build => fsgs_dev_build
+          }         
         ]
       end
     end
