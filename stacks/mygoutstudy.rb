@@ -5,6 +5,14 @@ module Deployinator
         "git@github.com:xfactoradvertising/mygoutstudyXL.git"
       end
 
+      def prod_user
+        'ubuntu'
+      end
+
+      def prod_ip
+        '10.248.3.116'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -27,6 +35,14 @@ module Deployinator
 
       def mygoutstudy_dev_build
         Version.get_build(mygoutstudy_dev_version)
+      end
+
+      def mygoutstudy_prod_version
+        %x{ssh #{prod_user}@#{prod_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def mygoutstudy_prod_build
+        Version.get_build(mygoutstudy_prod_version)
       end
 
       def mygoutstudy_head_build
@@ -60,6 +76,20 @@ module Deployinator
 
       end
 
+      def mygoutstudy_prod(options={})
+        old_build = Version.get_build(mygoutstudy_prod_version)
+        build = mygoutstudy_dev_build
+
+        begin
+          run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
+
       def mygoutstudy_environments
         [
           {
@@ -68,7 +98,14 @@ module Deployinator
             :current_version => mygoutstudy_dev_version,
             :current_build => mygoutstudy_dev_build,
             :next_build => mygoutstudy_head_build
-          }
+          },
+          {
+            :name => 'prod',
+            :method => 'mygoutstudy_prod',
+            :current_version => mygoutstudy_prod_version,
+            :current_build => mygoutstudy_prod_build,
+            :next_build => mygoutstudy_dev_build
+          }        
         ]
       end
     end
