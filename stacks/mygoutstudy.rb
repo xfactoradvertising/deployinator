@@ -86,10 +86,6 @@ module Deployinator
           # replace database config with production version
           run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path}/app/config && mv database.php.PROD database.php"}
 
-          run_cmd %Q{ssh #{prod_user}@#{prod_ip} "chmod 777 #{site_path}/app/storage/*"}
-          run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path} && /usr/local/bin/composer install"}
-          run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload"}
-
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
