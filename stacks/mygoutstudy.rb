@@ -61,7 +61,7 @@ module Deployinator
 
         begin
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='.git/' --exclude='.gitignore' #{mygoutstudy_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{mygoutstudy_git_checkout_path}/ #{site_path}}
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
@@ -81,7 +81,7 @@ module Deployinator
         build = mygoutstudy_dev_build
 
         begin
-          run_cmd %Q{rsync -ave ssh --delete --force #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
 
           # replace database config with production version
           run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path}/app/config && mv database.php.PROD database.php"}
