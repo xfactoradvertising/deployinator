@@ -82,6 +82,10 @@ module Deployinator
 
         begin
           run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+
+          # replace database config with production version
+          run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path}/app/config && mv database.php.PROD database.php"}
+
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
