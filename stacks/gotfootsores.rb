@@ -5,6 +5,14 @@ module Deployinator
         "git@github.com:xfactoradvertising/gotfootsoresXL.git"
       end
 
+      def prod_user
+        'ubuntu'
+      end
+
+      def prod_ip
+        '10.248.3.116'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -27,6 +35,14 @@ module Deployinator
 
       def gotfootsores_dev_build
         Version.get_build(gotfootsores_dev_version)
+      end
+
+      def gotfootsores_prod_version
+        %x{ssh #{prod_user}@#{prod_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def gotfootsores_prod_build
+        Version.get_build(gotfootsores_prod_version)
       end
 
       def gotfootsores_head_build
@@ -60,6 +76,20 @@ module Deployinator
 
       end
 
+      def gotfootsores_prod(options={})
+        old_build = Version.get_build(gotfootsores_prod_version)
+        build = gotfootsores_dev_build
+
+        begin
+          run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
+
       def gotfootsores_environments
         [
           {
@@ -68,6 +98,13 @@ module Deployinator
             :current_version => gotfootsores_dev_version,
             :current_build => gotfootsores_dev_build,
             :next_build => gotfootsores_head_build
+          },
+          {
+            :name => 'prod',
+            :method => 'gotfootsores_prod',
+            :current_version => gotfootsores_prod_version,
+            :current_build => gotfootsores_prod_build,
+            :next_build => gotfootsores_dev_build
           }
         ]
       end
