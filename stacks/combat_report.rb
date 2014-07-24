@@ -61,7 +61,7 @@ module Deployinator
 
         begin
           # sync files to final destination
-          run_cmd %Q{rsync -av --exclude='.git/' --exclude='.gitignore' #{combat_report_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --exclude='.git/' --exclude='.gitignore' #{combat_report_git_checkout_path}/ #{site_path}}
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
@@ -76,7 +76,7 @@ module Deployinator
         build = combat_report_dev_build
 
         begin
-          run_cmd %Q{rsync -ave ssh #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
