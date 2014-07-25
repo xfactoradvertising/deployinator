@@ -86,6 +86,9 @@ module Deployinator
           # replace database config with production version
           run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path}/app/config && mv database.php.PROD database.php"}
 
+          # replace controller with prod version
+          run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path}/app/controllers && mv BaseController.php.PROD BaseController.php"}
+
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
