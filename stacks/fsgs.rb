@@ -81,6 +81,10 @@ module Deployinator
 
         begin
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+
+          # reload site (ensure settings/environment files are correct)
+          run_cmd %Q{curl -s http://www.fsgsresearch.com/?reload=true&password=warps2FIFO > /dev/null}
+
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
