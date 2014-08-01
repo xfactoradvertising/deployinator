@@ -64,7 +64,7 @@ module Deployinator
           run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{fsgs_git_checkout_path}/ #{site_path}}
 
           # set design mode
-          run_cmd %Q{curl -s http://fsgsresearch.xfactordevelopment.com/?reload=design&password=warps2FIFO > /dev/null}
+          run_cmd %Q{curl -s -o /dev/null "http://fsgsresearch.xfactordevelopment.com/?reload=design&password=warps2FIFO"}
 
           log_and_stream "Done!<br>"
         rescue
@@ -83,7 +83,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
 
           # reload site (ensure settings/environment files are correct)
-          run_cmd %Q{curl -s http://www.fsgsresearch.com/?reload=true&password=warps2FIFO > /dev/null}
+          run_cmd %Q{curl -s -o /dev/null "http://www.fsgsresearch.com/?reload=true&password=warps2FIFO"}
 
           log_and_stream "Done!<br>"
         rescue
