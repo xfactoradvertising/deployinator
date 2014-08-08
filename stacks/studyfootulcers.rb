@@ -1,6 +1,6 @@
 module Deployinator
   module Stacks
-    module studyfootulcers
+    module Studyfootulcers
       def studyfootulcers_git_repo_url
         "git@github.com:xfactoradvertising/com.studyfootulcers.git"
       end
