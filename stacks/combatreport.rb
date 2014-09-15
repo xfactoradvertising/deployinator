@@ -9,7 +9,7 @@ module Deployinator
         '10.248.3.116' #web1
       end
 
-      def prod_version
+      def combatreport_production_version
         # just use the date stamp of the last deploy as the current production version
         version = %x{grep 'combat_report' #{__FILE__}../log/deployinator.log | tail -1 | cut -d'|' -f1}
         version.empty? ? 'none' : version
@@ -34,7 +34,7 @@ module Deployinator
           {
             :name => 'prod',
             :method => 'combatreport_prod',
-            :current_version => prod_version,
+            :current_version => combatreport_production_version,
             # TODO get last-modified date of dev site and show that
             # (e.g. use https://github.com/pe7er/db8sitelastmodified/blob/master/helper.php or similar)
             :current_build => 'dev',
