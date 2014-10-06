@@ -1,7 +1,7 @@
 module Deployinator
   module Stacks
     module Combatreport
-      def prod_user
+      def combatreport_prod_user
         'www-data'
       end
 
@@ -19,7 +19,7 @@ module Deployinator
       def combatreport_prod(options={})
         begin
           # TODO backup current production site first and try to restore that in case of disaster
-          run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd /opt/unite;/usr/bin/php5 unite.php"}
+          run_cmd %Q{ssh #{combatreport_prod_user}@#{prod_ip} "cd /opt/unite;/usr/bin/php5 unite.php"}
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
