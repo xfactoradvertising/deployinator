@@ -67,6 +67,8 @@ module Deployinator
             # maybe set CAP_CHOWN for deployinator?
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate} # run db migrations
+          # TODO run dump-autoload -o in production?
           #run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
           log_and_stream "Done!<br>"
         rescue
