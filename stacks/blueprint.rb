@@ -104,14 +104,14 @@ module Deployinator
             :current_version => blueprint_dev_version,
             :current_build => blueprint_dev_build,
             :next_build => blueprint_head_build
-          }#,
-          # {
-          #   :name => 'prod',
-          #   :method => 'blueprint_prod',
-          #   :current_version => blueprint_prod_version,
-          #   :current_build => blueprint_prod_build,
-          #   :next_build => blueprint_dev_build
-          # }        
+          },
+          {
+            :name => 'prod',
+            :method => 'blueprint_prod',
+            :current_version => blueprint_prod_version,
+            :current_build => blueprint_prod_build,
+            :next_build => blueprint_dev_build
+          }        
         ]
       end
     end
