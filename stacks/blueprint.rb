@@ -82,16 +82,20 @@ module Deployinator
         build = blueprint_dev_build
 
         begin
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down} # take application offline (maintenance mode)
+          # take application offline (maintenance mode)
+          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan down"}
 
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{blueprint_prod_user}@#{blueprint_prod_ip}:#{site_root}}
 
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload -o} # generate optimized autoload files
+          # run database migrations
+          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --force}
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up} # take application online
+          # take application online
+          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
 
           log_and_stream "Done!<br>"
         rescue
