@@ -49,6 +49,10 @@ module Deployinator
 
         begin
           # TODO check for zip files in app/views or app/controllers (or app/* ?) and fail..these break composer dump-autoload
+
+          # take site offline for deployment
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+
           # sync files to final destination
           run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
@@ -58,6 +62,10 @@ module Deployinator
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
+
+          # take site back online
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
+
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
