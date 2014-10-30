@@ -9,7 +9,7 @@ module Deployinator
         'www-data'
       end
 
-      def prod_ip
+      def blueprint_prod_ip
         '54.201.142.33'
       end
 
@@ -38,7 +38,7 @@ module Deployinator
       end
 
       def blueprint_prod_version
-        %x{ssh #{prod_user}@#{prod_ip} 'cat #{site_path}/version.txt'}
+        %x{ssh #{prod_user}@#{blueprint_prod_ip} 'cat #{site_path}/version.txt'}
       end
 
       def blueprint_prod_build
@@ -84,7 +84,7 @@ module Deployinator
         build = blueprint_dev_build
 
         begin
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{blueprint_prod_ip}:#{site_root}}
 
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate} # run db migrations
 
