@@ -79,23 +79,22 @@ module Deployinator
 
       end
 
-      # def blueprint_prod(options={})
-      #   old_build = Version.get_build(blueprint_prod_version)
-      #   build = blueprint_dev_build
+      def blueprint_prod(options={})
+        old_build = Version.get_build(blueprint_prod_version)
+        build = blueprint_dev_build
 
-      #   begin
-      #     run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
+        begin
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{prod_user}@#{prod_ip}:#{site_root}}
 
-      #     # replace database config with production version
-      #     run_cmd %Q{ssh #{prod_user}@#{prod_ip} "cd #{site_path}/app/config && mv database.php.PROD database.php"}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate} # run db migrations
 
-      #     log_and_stream "Done!<br>"
-      #   rescue
-      #     log_and_stream "Failed!<br>"
-      #   end
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
 
-      #   log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
-      # end
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
 
       def blueprint_environments
         [
