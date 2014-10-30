@@ -68,8 +68,6 @@ module Deployinator
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate} # run db migrations
-          # TODO run dump-autoload -o in production?
-          #run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
@@ -84,9 +82,16 @@ module Deployinator
         build = blueprint_dev_build
 
         begin
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down} # take application offline (maintenance mode)
+
+          # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{blueprint_prod_user}@#{blueprint_prod_ip}:#{site_root}}
 
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate} # run db migrations
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload -o} # generate optimized autoload files
+
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --force}
+
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up} # take application online
 
           log_and_stream "Done!<br>"
         rescue
