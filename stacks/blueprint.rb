@@ -64,10 +64,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{blueprint_git_checkout_path}/ #{site_path}}
-
-          # take application offline again because above sync resets it (by removing add/storage/meta/down)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='.git/' --exclude='.gitignore' #{blueprint_git_checkout_path}/ #{site_path}}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
@@ -100,9 +97,6 @@ module Deployinator
 
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{blueprint_prod_user}@#{blueprint_prod_ip}:#{site_root}}
-
-          # take application offline again because above sync resets it (by removing add/storage/meta/down)
-          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan down"}
 
           # run database migrations
           run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
