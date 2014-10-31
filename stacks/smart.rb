@@ -51,20 +51,20 @@ module Deployinator
           # TODO check for zip files in app/views or app/controllers (or app/* ?) and fail..these break composer dump-autoload
 
           # take site offline for deployment
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
-
-          # take application offline again because above sync resets it (by removing add/storage/meta/down)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
 
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
+
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-dev}
+
+          #probably don't need this..use post-install-cmd to clear and optimize instead
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
 
           # take site back online
