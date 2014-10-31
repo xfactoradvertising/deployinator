@@ -60,14 +60,24 @@ module Deployinator
         build = blueprint_head_build
 
         begin
+          # take application offline (maintenance mode)
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+
           # sync files to final destination
           run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{blueprint_git_checkout_path}/ #{site_path}}
-          #run_cmd %Q{cd #{site_path}/app/config && mv database.php.STAGE database.php}
-          # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
-            # maybe set CAP_CHOWN for deployinator?
+
+          # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+
+          # install dependencies (vendor dir was probably completely removed via above)
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate} # run db migrations
+
+          # run db migrations
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
+
+          # put application back online
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
+
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
