@@ -73,7 +73,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
 
           # update dependencies (handles changed versions and removals)
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer update}
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer update --prefer-dist -vvv --profile}
 
           # run db migrations
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
