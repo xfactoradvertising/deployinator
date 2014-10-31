@@ -61,7 +61,7 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
           run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='.git/' --exclude='.gitignore' #{blueprint_git_checkout_path}/ #{site_path}}
