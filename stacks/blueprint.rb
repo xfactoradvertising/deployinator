@@ -70,10 +70,7 @@ module Deployinator
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
 
           # install dependencies (vendor dir was probably completely removed via above)
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install}
-
-          # update dependencies (handles changed versions and removals)
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer update --prefer-dist -vvv --profile}
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
