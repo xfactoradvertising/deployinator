@@ -55,6 +55,10 @@ module Deployinator
 
           # sync files to final destination
           run_cmd %Q{rsync -av --delete --force --delete-excluded --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
+
+          # take application offline again because above sync resets it (by removing add/storage/meta/down)
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down}
+
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
