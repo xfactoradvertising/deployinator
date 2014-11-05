@@ -67,7 +67,7 @@ module Deployinator
           run_cmd %Q{rsync -av --delete --force --exclude='app/storage/*' --exclude='vendor/*' --exclude='.git/' --exclude='.gitignore' #{cicstudynow_git_checkout_path}/ #{site_path}}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          run_cmd %Q{chmod -R 777 #{site_path}/app/storage}
 
           # install dependencies (vendor dir was probably completely removed via above)
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
