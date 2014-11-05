@@ -64,7 +64,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --include='app/storage/meta'  --exclude='app/storage/*' --exclude='vendor/*' --exclude='.git/' --exclude='.gitignore' #{cicstudynow_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --include='app/storage/meta/services.json'  --exclude='app/storage/*' --exclude='vendor/*' --exclude='.git/' --exclude='.gitignore' #{cicstudynow_git_checkout_path}/ #{site_path}}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod -R 777 #{site_path}/app/storage}
@@ -73,7 +73,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
+          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
