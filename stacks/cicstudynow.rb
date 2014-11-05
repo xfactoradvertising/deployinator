@@ -2,7 +2,7 @@ module Deployinator
   module Stacks
     module Cicstudynow
       def cicstudynow_git_repo_url
-        "git@github.com:xfactoradvertising/cicstudynow.git"
+        "git@github.com:xfactoradvertising/com.cicstudynow.git"
       end
 
       def cicstudynow_prod_user
