@@ -63,8 +63,11 @@ module Deployinator
           # take application offline (maintenance mode)
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
-          # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --include='app/storage/meta/' --include='app/storage/logs/' --exclude='app/storage/meta/*' --exclude='app/storage/*' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{migrainestudynow_git_checkout_path}/ #{site_path}}
+          # sync site files to final destination
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{migrainestudynow_git_checkout_path}/ #{site_path}}
+
+          # additionally sync top-level storage dirs (but not their contents)
+          run_cmd %Q{rsync --rlptgoDv --delete --force #{migrainestudynow_git_checkout_path}/app/storage/ #{site_path}/app/storage}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
