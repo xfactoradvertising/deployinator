@@ -73,7 +73,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate || true} # TODO remove || true
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
