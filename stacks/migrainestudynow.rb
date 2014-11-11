@@ -67,7 +67,7 @@ module Deployinator
           run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{migrainestudynow_git_checkout_path}/ #{site_path}}
 
           # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -rlptgoDv --delete --force --exclude='.gitignore' #{migrainestudynow_git_checkout_path}/app/storage/ #{site_path}/app/storage}
+          run_cmd %Q{rsync -lptgoDv --delete --force --exclude='.gitignore' #{migrainestudynow_git_checkout_path}/app/storage/ #{site_path}/app/storage}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
