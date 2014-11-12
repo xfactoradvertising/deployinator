@@ -96,7 +96,7 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{ssh #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down"}
+          run_cmd %Q{ssh #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip} "cd #{site_path} && [[ -f artisan]] && /usr/bin/php artisan down"}
 
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip}:#{site_root}}
