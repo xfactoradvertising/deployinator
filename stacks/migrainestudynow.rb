@@ -98,6 +98,8 @@ module Deployinator
           # take application offline (maintenance mode)
           run_cmd %Q{ssh #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"} # return true so command is non-fatal (artisan doesn't exist the first time)
 
+          # TODO figure out how to keep from deleting migrainestudynow/app/storage/meta/down (which enables the site)
+
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip}:#{site_root}}
 
