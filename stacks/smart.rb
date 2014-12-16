@@ -5,6 +5,14 @@ module Deployinator
         "git@github.com:xfactoradvertising/smart.git"
       end
 
+      def smart_prod_user
+        'www-data'
+      end
+
+      def smart_prod_ip
+        '54.201.142.33'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -31,6 +39,14 @@ module Deployinator
 
       def smart_dev_build
         Version.get_build(smart_dev_version)
+      end
+
+      def smart_prod_version
+        %x{ssh #{smart_prod_user}@#{smart_prod_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def smart_prod_build
+        Version.get_build(smart_prod_version)
       end
 
       def smart_head_build
@@ -79,6 +95,36 @@ module Deployinator
 
       end
 
+      def smart_prod(options={})
+        old_build = Version.get_build(smart_prod_version)
+        build = smart_dev_build
+
+        begin
+          # take application offline (maintenance mode)
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"} # return true so command is non-fatal (artisan doesn't exist the first time)
+
+          # TODO figure out how to keep from deleting smart/app/storage/meta/down (which enables the site)
+
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
+
+          # run database migrations
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # take application online
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
+
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
+
       def smart_environments
         [
           {
@@ -87,14 +133,14 @@ module Deployinator
             :current_version => smart_dev_version,
             :current_build => smart_dev_build,
             :next_build => smart_head_build
-          }#,
-          # {
-          #   :name => 'prod',
-          #   :method => 'smart_prod',
-          #   :current_version => smart_prod_version,
-          #   :current_build => smart_prod_build,
-          #   :next_build => smart_dev_build
-          # }          
+          },
+          {
+            :name => 'prod',
+            :method => 'smart_prod',
+            :current_version => smart_prod_version,
+            :current_build => smart_prod_build,
+            :next_build => smart_dev_build
+          }        
         ]
       end
     end
