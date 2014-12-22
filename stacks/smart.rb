@@ -33,10 +33,6 @@ module Deployinator
         %x{cat #{smart_git_checkout_path}/version.txt}
       end
 
-      # def smart_prod_version
-      #   %x{ssh 54.245.225.193 "cat #{smart_git_checkout_path}/version.txt"}
-      # end
-
       def smart_dev_build
         Version.get_build(smart_dev_version)
       end
@@ -70,7 +66,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
 
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
@@ -106,7 +102,7 @@ module Deployinator
           # TODO figure out how to keep from deleting smart/app/storage/meta/down (which enables the site)
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
