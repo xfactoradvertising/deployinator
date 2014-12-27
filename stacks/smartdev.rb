@@ -1,7 +1,7 @@
 module Deployinator
   module Stacks
-    module SmartDev
-      def smart_dev_git_repo_url
+    module Smartdev
+      def smartdev_git_repo_url
         "git@github.com:xfactoradvertising/smart.git"
       end
 
@@ -17,31 +17,31 @@ module Deployinator
         "#{site_root}/#{stack}"
       end
 
-      def smart_dev_git_checkout_path
+      def smartdev_git_checkout_path
         "#{checkout_root}/#{stack}"
       end
 
-      def smart_dev_dev_version
-        %x{cat #{smart_dev_git_checkout_path}/version.txt}
+      def smartdev_dev_version
+        %x{cat #{smartdev_git_checkout_path}/version.txt}
       end
 
-      def smart_dev_dev_build
-        Version.get_build(smart_dev_dev_version)
+      def smartdev_dev_build
+        Version.get_build(smartdev_dev_version)
       end
 
-      def smart_dev_head_build
-        %x{git ls-remote #{smart_dev_git_repo_url} HEAD | cut -c1-7}.chomp
+      def smartdev_head_build
+        %x{git ls-remote #{smartdev_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def smart_dev_dev(options={})
-        old_build = Version.get_build(smart_dev_dev_version)
+      def smartdev_dev(options={})
+        old_build = Version.get_build(smartdev_dev_version)
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone_branch
         send(git_cmd, stack, 'dev', 'sh -c')
 
         git_bump_version stack, ''
 
-        build = smart_dev_head_build
+        build = smartdev_head_build
 
         begin
           # TODO check for zip files in app/views or app/controllers (or app/* ?) and fail..these break composer dump-autoload
@@ -50,7 +50,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smart_dev_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smartdev_git_checkout_path}/ #{site_path}}
 
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
@@ -75,14 +75,14 @@ module Deployinator
 
       end
 
-      def smart_dev_environments
+      def smartdev_environments
         [
           {
             :name => 'dev',
-            :method => 'smart_dev_dev',
-            :current_version => smart_dev_dev_version,
-            :current_build => smart_dev_dev_build,
-            :next_build => smart_dev_head_build
+            :method => 'smartdev_dev',
+            :current_version => smartdev_dev_version,
+            :current_build => smartdev_dev_build,
+            :next_build => smartdev_head_build
           }        
         ]
       end
