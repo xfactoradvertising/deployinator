@@ -27,6 +27,10 @@ module Deployinator
         run_cmd %Q{#{extra_cmd} 'cd #{checkout_root} && git clone #{repo_url} #{stack}'}
       end
 
+      def github_clone_branch(stack, branch, extra_cmd="sh -c")
+        git_clone_branch(stack, git_url(stack), branch, extra_cmd)
+      end
+
       def git_clone_branch(stack, repo_url, branch, extra_cmd="sh -c")
         run_cmd %Q{#{extra_cmd} 'cd #{checkout_root} && git clone #{repo_url} --branch #{branch} --single-branch #{stack}'}
       end
