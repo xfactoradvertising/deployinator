@@ -20,7 +20,7 @@ module Deployinator
       end
 
       def git_freshen_clone_branch(stack, branch, extra_cmd="sh -c")
-        run_cmd %Q{#{extra_cmd} 'cd #{checkout_root}/#{stack} && git fetch && git reset --hard #{branch}'}
+        run_cmd %Q{#{extra_cmd} 'cd #{checkout_root}/#{stack} && git fetch && git reset --hard "origin/#{branch}"'}
         yield "#{checkout_root}/#{stack}" if block_given?
       end
 
