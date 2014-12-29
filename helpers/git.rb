@@ -19,6 +19,11 @@ module Deployinator
         yield "#{checkout_root}/#{stack}" if block_given?
       end
 
+      def git_freshen_clone_branch(stack, branch, extra_cmd="sh -c")
+        run_cmd %Q{#{extra_cmd} 'cd #{checkout_root}/#{stack} && git fetch && git reset --hard #{branch}'}
+        yield "#{checkout_root}/#{stack}" if block_given?
+      end
+
       def github_clone(stack, extra_cmd="sh -c")
         git_clone(stack, git_url(stack), extra_cmd)
       end
