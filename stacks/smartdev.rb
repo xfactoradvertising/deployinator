@@ -37,7 +37,12 @@ module Deployinator
         old_build = Version.get_build(smartdev_dev_version)
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone_branch
-        send(git_cmd, stack, 'dev', 'sh -c')
+
+        if git_cmd == :github_clone_branch
+          send(git_cmd, stack, 'dev', 'sh -c')
+        else
+          send(git_cmd, stack, 'sh -c')
+        end
 
         git_bump_version stack, ''
 
