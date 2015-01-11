@@ -29,12 +29,12 @@ module Deployinator
         "#{checkout_root}/#{stack}"
       end
 
-      def smart_dev_version
+      def smart_staging_version
         %x{cat #{smart_git_checkout_path}/version.txt}
       end
 
-      def smart_dev_build
-        Version.get_build(smart_dev_version)
+      def smart_staging_build
+        Version.get_build(smart_staging_version)
       end
 
       def smart_prod_version
@@ -49,8 +49,8 @@ module Deployinator
         %x{git ls-remote #{smart_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def smart_dev(options={})
-        old_build = Version.get_build(smart_dev_version)
+      def smart_staging(options={})
+        old_build = Version.get_build(smart_staging_version)
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
         send(git_cmd, stack, 'sh -c')
@@ -74,7 +74,7 @@ module Deployinator
           run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
 
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-dev}
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-staging}
 
           #probably don't need this..use post-install-cmd to clear and optimize instead
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
@@ -93,7 +93,7 @@ module Deployinator
 
       def smart_prod(options={})
         old_build = Version.get_build(smart_prod_version)
-        build = smart_dev_build
+        build = smart_staging_build
 
         begin
           # take application offline (maintenance mode)
@@ -121,10 +121,10 @@ module Deployinator
       def smart_environments
         [
           {
-            :name => 'dev',
-            :method => 'smart_dev',
-            :current_version => smart_dev_version,
-            :current_build => smart_dev_build,
+            :name => 'staging',
+            :method => 'smart_staging',
+            :current_version => smart_staging_version,
+            :current_build => smart_staging_build,
             :next_build => smart_head_build
           },
           {
@@ -132,7 +132,7 @@ module Deployinator
             :method => 'smart_prod',
             :current_version => smart_prod_version,
             :current_build => smart_prod_build,
-            :next_build => smart_dev_build
+            :next_build => smart_staging_build
           }        
         ]
       end
