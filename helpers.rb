@@ -408,7 +408,7 @@ module Deployinator
     def get_stacks_select_box
       stacks = Dir.glob('stacks/*.rb')
       output = "<select name='stacks' id='stacks'>"
-      stacks.each do |s|
+      stacks.sort.each do |s|
         s = s.gsub("stacks/", "").gsub(".rb", "")
         next if Deployinator.disabled_stacks.include?(s) # skip disabled stacks
         output << "<option value='#{s}'"
