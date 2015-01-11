@@ -410,6 +410,7 @@ module Deployinator
       output = "<select name='stacks' id='stacks'>"
       stacks.each do |s|
         s = s.gsub("stacks/", "").gsub(".rb", "")
+        next if Deployinator.disabled_stacks.include?(s) # skip disabled stacks
         output << "<option value='#{s}'"
         output << " selected='selected'" if s == stack
         output << ">#{s}</option>"

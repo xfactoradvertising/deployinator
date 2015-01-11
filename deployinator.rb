@@ -53,6 +53,11 @@ module Deployinator
       log_file
     end
 
+    # disabled stacks (stack file still present but hidden in the UI)
+    def disabled_stacks
+        ['migrainestudynow','blueprint','cicstudynow']
+    end
+
     # Running environment for deployinator
     # This is taken from RACK_ENV or RAILS_ENV
     # *note* this is different from deployinator's concept of stacks/environments
