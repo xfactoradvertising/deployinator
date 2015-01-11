@@ -74,7 +74,7 @@ module Deployinator
           run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
 
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-staging}
+          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-dev}
 
           #probably don't need this..use post-install-cmd to clear and optimize instead
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
