@@ -30,7 +30,9 @@ module Deployinator
       end
 
       def smartdev_head_build
-        %x{git ls-remote #{smartdev_git_repo_url} HEAD | cut -c1-7}.chomp
+        # NOTE explicitly getting branch HEAD revision here (could move to a helper)
+        %x{git ls-remote #{smartdev_git_repo_url} dev HEAD | tail -1 | cut -c1-7}.chomp
+        #{}%x{git ls-remote #{smartdev_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
       def smartdev_dev(options={})
