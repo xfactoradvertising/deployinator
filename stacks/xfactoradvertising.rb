@@ -29,12 +29,12 @@ module Deployinator
         "#{checkout_root}/#{stack}"
       end
 
-      def xfactoradvertising_dev_version
+      def xfactoradvertising_staging_version
         %x{cat #{xfactoradvertising_git_checkout_path}/version.txt}
       end
 
-      def xfactoradvertising_dev_build
-        Version.get_build(xfactoradvertising_dev_version)
+      def xfactoradvertising_staging_build
+        Version.get_build(xfactoradvertising_staging_version)
       end
 
       def xfactoradvertising_prod_version
@@ -49,8 +49,8 @@ module Deployinator
         %x{git ls-remote #{xfactoradvertising_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def xfactoradvertising_dev(options={})
-        old_build = Version.get_build(xfactoradvertising_dev_version)
+      def xfactoradvertising_staging(options={})
+        old_build = Version.get_build(xfactoradvertising_staging_version)
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
         send(git_cmd, stack, 'sh -c')
@@ -92,7 +92,7 @@ module Deployinator
 
       def xfactoradvertising_prod(options={})
         old_build = Version.get_build(xfactoradvertising_prod_version)
-        build = xfactoradvertising_dev_build
+        build = xfactoradvertising_staging_build
 
         begin
           # take application offline (maintenance mode)
@@ -123,10 +123,10 @@ module Deployinator
       def xfactoradvertising_environments
         [
           {
-            :name => 'dev',
-            :method => 'xfactoradvertising_dev',
-            :current_version => xfactoradvertising_dev_version,
-            :current_build => xfactoradvertising_dev_build,
+            :name => 'staging',
+            :method => 'xfactoradvertising_staging',
+            :current_version => xfactoradvertising_staging_version,
+            :current_build => xfactoradvertising_staging_build,
             :next_build => xfactoradvertising_head_build
           },
           {
@@ -134,7 +134,7 @@ module Deployinator
             :method => 'xfactoradvertising_prod',
             :current_version => xfactoradvertising_prod_version,
             :current_build => xfactoradvertising_prod_build,
-            :next_build => xfactoradvertising_dev_build
+            :next_build => xfactoradvertising_staging_build
           }        
         ]
       end
