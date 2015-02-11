@@ -64,7 +64,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/ #{site_path}}
 
           # additionally sync top-level storage dirs (but not their contents)
           run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/app/storage/ #{site_path}/app/storage}
