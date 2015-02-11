@@ -76,7 +76,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh} # TODO remove the :refresh
+          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh} # TODO remove the :refresh
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
@@ -104,7 +104,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip}:#{site_root}}
 
           # run database migrations
-          run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          #run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
