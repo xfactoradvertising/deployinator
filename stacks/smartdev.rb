@@ -66,7 +66,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --env=dev}
 
           # take site back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
