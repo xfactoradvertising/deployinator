@@ -65,6 +65,9 @@ module Deployinator
           #probably don't need this..use post-install-cmd to clear and optimize instead
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
 
+          # run db migrations
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
+
           # take site back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
 
