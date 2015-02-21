@@ -52,13 +52,14 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smartdev_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smartdev_git_checkout_path}/ #{site_path}}
 
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
           run_cmd %Q{chmod 777 #{site_path}/app/storage/}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
+          run_cmd %Q{chmod 777 #{site_path}/app/files}
 
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-dev}
 
