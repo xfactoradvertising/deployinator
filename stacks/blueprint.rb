@@ -118,6 +118,7 @@ module Deployinator
         log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
       end
 
+      # blueprint prod is left purely as an example
       def blueprint_environments
         [
           {
@@ -126,14 +127,14 @@ module Deployinator
             :current_version => blueprint_dev_version,
             :current_build => blueprint_dev_build,
             :next_build => blueprint_head_build
-          },
-          {
-            :name => 'prod',
-            :method => 'blueprint_prod',
-            :current_version => blueprint_prod_version,
-            :current_build => blueprint_prod_build,
-            :next_build => blueprint_dev_build
-          }        
+          }#,
+          # {
+          #   :name => 'prod',
+          #   :method => 'blueprint_prod',
+          #   :current_version => blueprint_prod_version,
+          #   :current_build => blueprint_prod_build,
+          #   :next_build => blueprint_dev_build
+          # }        
         ]
       end
     end
