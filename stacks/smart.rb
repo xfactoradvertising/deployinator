@@ -115,7 +115,7 @@ module Deployinator
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --force}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate env=production}
 
 
           # take application online
