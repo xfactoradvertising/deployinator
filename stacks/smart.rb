@@ -109,7 +109,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
 
           # run database migrations
-          run_cmd %Q{ssh #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate"}
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
@@ -117,6 +117,8 @@ module Deployinator
           # run db migrations
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --env=production}
 
+          # run database migrations
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
           # take application online
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
