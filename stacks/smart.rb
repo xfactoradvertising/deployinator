@@ -66,13 +66,14 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
 
           # sync files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' #{smart_git_checkout_path}/ #{site_path}}
 
           # set permissions so webserver can write TODO setup passwordless sudo to chown&chmod instead? or
             # maybe set CAP_CHOWN for deployinator?
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          run_cmd %Q{chmod 777 #{site_path}/app/storage/}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
+          run_cmd %Q{chmod 777 #{site_path}/app/files}
 
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install  --no-dev}
 
@@ -80,7 +81,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer dump-autoload}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --env=staging}
 
           # take site back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
@@ -105,13 +106,17 @@ module Deployinator
           # TODO figure out how to keep from deleting smart/app/storage/meta/down (which enables the site)
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
 
           # run database migrations
           run_cmd %Q{ssh #{migrainestudynow_prod_user}@#{migrainestudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # run db migrations
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --env=production --force}
+
 
           # take application online
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
