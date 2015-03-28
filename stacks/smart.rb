@@ -108,9 +108,6 @@ module Deployinator
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' #{site_path} #{smart_prod_user}@#{smart_prod_ip}:#{site_root}}
 
-          # run database migrations
-          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate"}
-
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
