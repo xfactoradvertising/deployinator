@@ -113,9 +113,9 @@ module Deployinator
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
-          
+
           # run database migrations
-          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --env=production"}
+          run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=production"}
 
           # take application online
           run_cmd %Q{ssh #{smart_prod_user}@#{smart_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
