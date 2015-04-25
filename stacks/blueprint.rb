@@ -96,7 +96,7 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan down"}
+          run_cmd %Q{ssh #{blueprint_prod_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"} # return true so command is non-fatal (artisan doesn't exist the first time)
 
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{blueprint_prod_user}@#{blueprint_prod_ip}:#{site_root}}
