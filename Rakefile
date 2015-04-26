@@ -111,7 +111,7 @@ task :new_blueprint_stack do
     f.print "{{< generic_single_push }}"
   end
   
-  puts "Created #{stack}!\nEdit stacks/#{stack}.rb##{stack}_production to do your bidding"
+  puts "Created #{stack}!\nEdit stacks/#{stack}.rb to alter the behavior."
 end
 
 #
