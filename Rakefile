@@ -71,6 +71,48 @@ end
   puts "Created #{stack}!\nEdit stacks/#{stack}.rb##{stack}_production to do your bidding"
 end
 
+# TODO just have a single task "new_stack" that takes an argument (the template to use) then change the above task to just be a default.erb template
+desc "Create a new laravel blueprint stack. usage: STACK=mysite rake new_blueprint_stack"
+task :new_blueprint_stack do
+
+  require 'mustache/sinatra'
+  require 'io/console'
+
+  stack = ENV['STACK']
+  raise "You must supply a stack name (like STACK=foo rake new_stack)" unless stack
+  if File.exists?("./stacks/#{stack}.rb")
+    print "Stack #{stack} already exists.  Overwrite? (y/n): "
+    clobber = STDIN.getch
+
+    unless clobber.downcase == 'y'
+      puts "aborted."
+      exit 1
+    end
+  end
+
+
+  require 'erb'
+
+  stack_template = File.join(File.dirname(__FILE__), 'stack_templates', 'blueprint.erb')
+
+  begin
+    template = File.read(stack_template)
+  rescue Errno::ENOENT
+    raise(ArgumentError, "couldn't find #{stack_template}")
+  end
+
+  rendering = ERB.new(template,nil,'>-<>').result(binding)  # => "Hello World"
+
+  File.open("./stacks/#{stack}.rb", "w") do |f|
+    f.puts(rendering)
+  end
+
+  File.open("./templates/#{stack}.mustache", "w") do |f|
+    f.print "{{< generic_single_push }}"
+  end
+  
+  puts "Created #{stack}!\nEdit stacks/#{stack}.rb##{stack}_production to do your bidding"
+end
 
 #
 # Documentation
