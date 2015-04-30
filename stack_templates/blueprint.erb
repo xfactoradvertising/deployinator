@@ -100,7 +100,7 @@ module Deployinator
           run_cmd %Q{ssh #{<%= stack %>_prod_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect /.env" #{<%= stack %>_prod_user}@#{<%= stack %>_prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env" --filter "protect down" #{<%= stack %>_prod_user}@#{<%= stack %>_prod_ip}:#{site_root}}
 
           # run database migrations
           run_cmd %Q{ssh #{<%= stack %>_prod_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
