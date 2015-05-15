@@ -76,7 +76,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
@@ -100,7 +100,7 @@ module Deployinator
           run_cmd %Q{ssh #{pancreaticcancerandyou_prod_user}@#{pancreaticcancerandyou_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{pancreaticcancerandyou_prod_user}@#{pancreaticcancerandyou_prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{pancreaticcancerandyou_prod_user}@#{pancreaticcancerandyou_prod_ip}:#{site_root}}
 
           # run database migrations
           run_cmd %Q{ssh #{pancreaticcancerandyou_prod_user}@#{pancreaticcancerandyou_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
