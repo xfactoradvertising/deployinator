@@ -70,10 +70,9 @@ module Deployinator
           run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{smart_git_checkout_path}/app/storage/ #{site_path}/app/storage}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          run_cmd %Q{chmod -R 777 #{site_path}/app/storage/*}
 
           # smart-specific chmods
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
           run_cmd %Q{chmod 777 #{site_path}/public/assets/files}
           run_cmd %Q{chmod 777 #{site_path}/app/files}
