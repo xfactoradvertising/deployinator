@@ -82,7 +82,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh --seed --env=dev}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --force --env=dev}
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
