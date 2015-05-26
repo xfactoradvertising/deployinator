@@ -106,7 +106,7 @@ module Deployinator
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' #{site_path} --filter "protect .env.php" --filter "protect down" #{smart_user}@#{smart_stage_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' #{site_path} --filter "protect .env.php" --filter "protect .env.stage.php" --filter "protect down" #{smart_user}@#{smart_stage_ip}:#{site_root}}
 
           # run database migrations
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --env=production"}
