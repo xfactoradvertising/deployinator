@@ -106,16 +106,16 @@ module Deployinator
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' #{site_path} --filter "protect .env.php" --filter "protect .env.stage.php" --filter "protect down" #{smart_user}@#{smart_stage_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' --exclude='app/storage/*' #{site_path} --filter "protect .env.php" --filter "protect .env.stage.php" --filter "protect down" #{smart_user}@#{smart_stage_ip}:#{site_root}}
 
           # run database migrations
-          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --env=production"}
+          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --env=stage"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # take application online
-          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=production"}
+          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
 
           log_and_stream "Done!<br>"
         rescue
