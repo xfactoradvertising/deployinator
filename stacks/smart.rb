@@ -97,7 +97,7 @@ module Deployinator
       end
 
       def smart_stage(options={})
-        old_build = Version.get_build(smart_prod_version)
+        old_build = Version.get_build(smart_stage_version)
         build = smart_dev_build
 
         begin
@@ -135,10 +135,10 @@ module Deployinator
             :next_build => smart_head_build
           },
           {
-            :name => 'prod',
-            :method => 'smart_prod',
-            :current_version => smart_prod_version,
-            :current_build => smart_prod_build,
+            :name => 'stage',
+            :method => 'smart_stage',
+            :current_version => smart_stage_version,
+            :current_build => smart_stage_build,
             :next_build => smart_dev_build
           }        
         ]
