@@ -82,7 +82,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --force --env=dev}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --env=dev}
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
@@ -109,7 +109,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' --exclude='app/storage/*' #{site_path} --filter "protect .env.php" --filter "protect .env.stage.php" --filter "protect down" #{smart_user}@#{smart_stage_ip}:#{site_root}}
 
           # run database migrations
-          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --env=stage"}
+          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=stage"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
