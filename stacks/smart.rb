@@ -81,6 +81,9 @@ module Deployinator
           # install dependencies (vendor dir was probably completely removed via above)
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
+          # generate optimized autoload files
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan dump-autoload --env=dev}
+
           # run db migrations
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --env=dev}
 
@@ -108,11 +111,11 @@ module Deployinator
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='public/assets/audio/' --exclude='public/assets/files/' --exclude='app/files/*' --exclude='app/storage/*' #{site_path} --filter "protect .env.php" --filter "protect .env.stage.php" --filter "protect down" #{smart_user}@#{smart_stage_ip}:#{site_root}}
 
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan dump-autoload --env=stage"}
+
           # run database migrations
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=stage"}
-
-          # generate optimized autoload files
-          run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # take application online
           run_cmd %Q{ssh #{smart_user}@#{smart_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
