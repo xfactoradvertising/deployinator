@@ -72,7 +72,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*' #{endostudynow_git_checkout_path} --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env.stage.php" --filter "protect down" #{endostudynow_user}@#{endostudynow_stage_ip}:#{site_root}}
 
           # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -ave ssh --dirs --delete --force --exclude='.gitignore' #{endostudynow_git_checkout_path}/app/storage/ #{endostudynow_user}@#{endostudynow_stage_ip}:#{site_root}/app/storage}
+          run_cmd %Q{rsync -ave ssh --dirs --delete --force --exclude='.gitignore' #{endostudynow_git_checkout_path}/app/storage/ #{endostudynow_user}@#{endostudynow_stage_ip}:#{site_path}/app/storage}
 
           # install dependencies
           run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
