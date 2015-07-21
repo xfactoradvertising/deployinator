@@ -91,7 +91,7 @@ module Deployinator
           log_and_stream "Failed!<br>"
         end
 
-        log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
+        log_and_shout(:old_build => old_build, :build => build, :env => 'STAGE', :send_email => false) # TODO make email true
 
       end
 
