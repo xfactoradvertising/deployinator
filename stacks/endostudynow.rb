@@ -65,22 +65,24 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
-          # sync site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' #{endostudynow_git_checkout_path}/ #{site_path}}
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/' #{endostudynow_git_checkout_path} --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env.stage.php" --filter "protect down" #{endostudynow_user}@#{endostudynow_stage_ip}:#{site_root}}
 
           # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{endostudynow_git_checkout_path}/app/storage/ #{site_path}/app/storage}
+          run_cmd %Q{rsync -lptgoDve ssh --dirs --delete --force --exclude='.gitignore' #{endostudynow_git_checkout_path}/app/storage/ #{endostudynow_user}@#{endostudynow_stage_ip}:#{site_root}/app/storage}
 
           # install dependencies
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
+
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate:refresh"}
 
           # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan up"}
 
           log_and_stream "Done!<br>"
         rescue
