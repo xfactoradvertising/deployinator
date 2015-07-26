@@ -96,7 +96,7 @@ module Deployinator
       end
 
       def endostudynow_prod(options={})
-        old_build = Version.get_build(endostudynow_prod_version) || 'none'
+        old_build = Version.get_build(endostudynow_prod_version)
         build = endostudynow_stage_build
 
         begin
