@@ -97,7 +97,7 @@ module Deployinator
 
       def endostudynow_prod(options={})
         old_build = Version.get_build(endostudynow_prod_version)
-        build = endostudynow_dev_build
+        build = endostudynow_stage_build
 
         begin
           # take application offline (maintenance mode)
