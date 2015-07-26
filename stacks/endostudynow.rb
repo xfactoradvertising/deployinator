@@ -138,7 +138,7 @@ module Deployinator
             :method => 'endostudynow_prod',
             :current_version => endostudynow_prod_version,
             :current_build => endostudynow_prod_build,
-            :next_build => endostudynow_dev_build
+            :next_build => endostudynow_stage_build
           }        
         ]
       end
