@@ -105,10 +105,10 @@ module Deployinator
           run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*' --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" --filter "protect app/storage/*" #{endostudynow_user}@#{endostudynow_prod_ip}:#{site_root}}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && rsync -ave ssh --delete --force --exclude='app/storage/*' --delete-excluded #{site_path} --filter 'protect .env.php' --filter 'protect down' --filter 'protect app/storage/*' #{endostudynow_user}@#{endostudynow_prod_ip}:#{site_root}"}
 
-          # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -lptgoDve ssh --dirs --delete --force --exclude='.gitignore' #{endostudynow_git_checkout_path}/app/storage/ #{endostudynow_user}@#{endostudynow_prod_ip}:#{site_path}/app/storage}
+          # # additionally sync top-level storage dirs (but not their contents)
+          # run_cmd %Q{rsync -lptgoDve ssh --dirs --delete --force --exclude='.gitignore' #{endostudynow_git_checkout_path}/app/storage/ #{endostudynow_user}@#{endostudynow_prod_ip}:#{site_path}/app/storage}
 
           # run database migrations
           run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
