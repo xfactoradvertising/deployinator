@@ -102,19 +102,19 @@ module Deployinator
         begin
           # take application offline (maintenance mode)
           # return true so command is non-fatal (artisan doesn't exist the first time)
-          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/* --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" --filter "protect app/storage/*" #{endostudynow_prod_user}@#{endostudynow_prod_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/* --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" --filter "protect app/storage/*" #{endostudynow_user}@#{endostudynow_prod_ip}:#{site_root}}
 
           # run database migrations
-          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
           # generate optimized autoload files
-          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # take application online
-          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
 
           log_and_stream "Done!<br>"
         rescue
