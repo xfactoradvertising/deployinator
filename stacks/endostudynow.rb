@@ -95,34 +95,34 @@ module Deployinator
 
       end
 
-      # def endostudynow_prod(options={})
-      #   old_build = Version.get_build(endostudynow_prod_version)
-      #   build = endostudynow_dev_build
+      def endostudynow_prod(options={})
+        old_build = Version.get_build(endostudynow_prod_version)
+        build = endostudynow_dev_build
 
-      #   begin
-      #     # take application offline (maintenance mode)
-      #     # return true so command is non-fatal (artisan doesn't exist the first time)
-      #     run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
+        begin
+          # take application offline (maintenance mode)
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
-      #     # sync new app contents
-      #     run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{endostudynow_prod_user}@#{endostudynow_prod_ip}:#{site_root}}
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/* --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" --filter "protect app/storage/*" #{endostudynow_prod_user}@#{endostudynow_prod_ip}:#{site_root}}
 
-      #     # run database migrations
-      #     run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          # run database migrations
+          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
-      #     # generate optimized autoload files
-      #     run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
-      #     # take application online
-      #     run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
+          # take application online
+          run_cmd %Q{ssh #{endostudynow_prod_user}@#{endostudynow_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
 
-      #     log_and_stream "Done!<br>"
-      #   rescue
-      #     log_and_stream "Failed!<br>"
-      #   end
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
 
-      #   log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
-      # end
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
 
       def endostudynow_environments
         [
@@ -132,14 +132,14 @@ module Deployinator
             :current_version => endostudynow_stage_version,
             :current_build => endostudynow_stage_build,
             :next_build => endostudynow_head_build
-          }#,
-          # {
-          #   :name => 'prod',
-          #   :method => 'endostudynow_prod',
-          #   :current_version => endostudynow_prod_version,
-          #   :current_build => endostudynow_prod_build,
-          #   :next_build => endostudynow_dev_build
-          # }        
+          },
+          {
+            :name => 'prod',
+            :method => 'endostudynow_prod',
+            :current_version => endostudynow_prod_version,
+            :current_build => endostudynow_prod_build,
+            :next_build => endostudynow_dev_build
+          }        
         ]
       end
     end
