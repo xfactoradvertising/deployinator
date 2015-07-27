@@ -81,7 +81,7 @@ module Deployinator
           run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan dump-autoload --env=stage"}
 
           # run db migrations
-          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate:refresh --env=stage"}
+          run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=stage"}
 
           # put application back online
           run_cmd %Q{ssh #{endostudynow_user}@#{endostudynow_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
