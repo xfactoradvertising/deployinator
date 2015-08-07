@@ -78,7 +78,8 @@ module Deployinator
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
           # run db migrations
-          run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=stage"}
+          # TODO add database via env setup (puppet)
+          #run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=stage"}
 
           # put application back online
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
