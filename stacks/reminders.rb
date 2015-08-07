@@ -77,9 +77,6 @@ module Deployinator
           # install dependencies
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
-          # generate optimized autoload files
-          run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan dump-autoload --env=stage"}
-
           # run db migrations
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --env=stage"}
 
