@@ -69,7 +69,7 @@ module Deployinator
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='/storage/' #{reminders_git_checkout_path} --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env.stage.php" --filter "protect down" --filter "protect reminders/vendor/" --filter "protect reminders/storage/*" #{reminders_user}@#{reminders_stage_ip}:#{site_root}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='/storage/' #{reminders_git_checkout_path} --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env.stage.php" --filter "protect down" --filter "protect reminders/vendor/" --filter "protect reminders/storage/*" --filter "protect reminders/bootstrap/cache/" #{reminders_user}@#{reminders_stage_ip}:#{site_root}}
 
           # # additionally sync top-level storage dirs (but not their contents)
           # run_cmd %Q{rsync -lptgoDve ssh --dirs --delete --force --exclude='.gitignore' #{reminders_git_checkout_path}/app/storage/ #{reminders_user}@#{reminders_stage_ip}:#{site_path}/app/storage}
