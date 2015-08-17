@@ -34,7 +34,7 @@ module Deployinator
       end
 
       def smartpatienttracker_dev_version
-        %x{cat #{smartpatienttracker_git_checkout_path}/version.txt}
+        %x{cat #{site_path}/version.txt}
       end
 
       def smartpatienttracker_dev_build
@@ -132,7 +132,7 @@ module Deployinator
 
       def smartpatienttracker_prod(options={})
         old_build = Version.get_build(smartpatienttracker_prod_version)
-        build = smartpatienttracker_dev_build
+        build = smartpatienttracker_stage_build
 
         begin
           # take application offline (maintenance mode)
