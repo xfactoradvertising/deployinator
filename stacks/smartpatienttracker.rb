@@ -42,7 +42,7 @@ module Deployinator
       end
 
       def smartpatienttracker_stage_version
-        %x{ssh #{smartpatienttracker_user}@#{ssmartpatienttracker_stage_ip} 'cat #{site_path}/version.txt'}
+        %x{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} 'cat #{site_path}/version.txt'}
       end
 
       def smartpatienttracker_stage_build
