@@ -176,14 +176,14 @@ module Deployinator
             :method => 'smartpatienttracker_stage',
             :current_version => smartpatienttracker_stage_version,
             :current_build => smartpatienttracker_stage_build,
-            :next_build => smartpatienttracker_head_build
+            :next_build => smartpatienttracker_dev_build
           },
           {
             :name => 'prod',
             :method => 'smartpatienttracker_prod',
             :current_version => smartpatienttracker_prod_version,
             :current_build => smartpatienttracker_prod_build,
-            :next_build => smartpatienttracker_dev_build
+            :next_build => smartpatienttracker_stage_build
           }        
         ]
       end
