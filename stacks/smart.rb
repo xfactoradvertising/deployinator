@@ -13,6 +13,10 @@ module Deployinator
         '52.25.81.13'
       end
 
+      def smart_prod_ip
+        '54.201.142.33'
+      end
+
       def checkout_root
         "/tmp"
       end
