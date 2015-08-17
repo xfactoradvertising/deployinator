@@ -69,7 +69,7 @@ module Deployinator
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{reminders_git_checkout_path}/ #{reminders_user}@#{reminders_stage_ip}:#{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/*/**" #{reminders_git_checkout_path}/ #{reminders_user}@#{reminders_stage_ip}:#{site_path}}
 
           # install dependencies
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
@@ -99,7 +99,7 @@ module Deployinator
           run_cmd %Q{ssh #{reminders_user}@#{reminders_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/**' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
+          run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/*/**' #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
 
           # run database migrations
           run_cmd %Q{ssh #{reminders_user}@#{reminders_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
