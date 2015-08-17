@@ -76,7 +76,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down --env=dev || true} # return true so command is non-fatal
 
           # sync relevant site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{smartpatienttracker_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{smartpatienttracker_git_checkout_path}/ #{site_path}}
 
           # sync relevant site files to final destination
           # run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect smartpatienttracker/vendor/**" --filter "protect smartpatienttracker/app/storage/**" #{smartpatienttracker_git_checkout_path} #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_root}}
