@@ -78,9 +78,6 @@ module Deployinator
           # sync relevant site files to final destination
           run_cmd %Q{rsync -av --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{smartpatienttracker_git_checkout_path}/ #{site_path}}
 
-          # sync relevant site files to final destination
-          # run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect smartpatienttracker/vendor/**" --filter "protect smartpatienttracker/app/storage/**" #{smartpatienttracker_git_checkout_path} #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_root}}
-
            # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
 
@@ -99,6 +96,42 @@ module Deployinator
         end
 
         log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
+
+      end
+
+      def smartpatienttracker_stage(options={})
+        old_build = smartpatienttracker_stage_build
+
+        git_cmd = old_build ? :git_freshen_clone : :github_clone
+        send(git_cmd, stack, 'sh -c')
+
+        git_bump_version stack, ''
+
+        build = smartpatienttracker_head_build
+
+        begin
+          # take application offline (maintenance mode)
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
+
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{smartpatienttracker_git_checkout_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_root}}
+
+          # install dependencies
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
+
+          # run db migrations
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
+
+          # put application back online
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
+
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'STAGE', :send_email => false) # TODO make email true
 
       end
 
@@ -138,6 +171,13 @@ module Deployinator
             :method => 'smartpatienttracker_dev',
             :current_version => smartpatienttracker_dev_version,
             :current_build => smartpatienttracker_dev_build,
+            :next_build => smartpatienttracker_head_build
+          },
+          {
+            :name => 'stage',
+            :method => 'smartpatienttracker_stage',
+            :current_version => smartpatienttracker_stage_version,
+            :current_build => smartpatienttracker_stage_build,
             :next_build => smartpatienttracker_head_build
           },
           {
