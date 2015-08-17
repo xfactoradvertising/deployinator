@@ -80,6 +80,8 @@ module Deployinator
 
            # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          run_cmd %Q{chmod 777 #{site_path}/app/files}
+          run_cmd %Q{chmod 777 #{site_path}/files}
 
           # install dependencies
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
