@@ -55,7 +55,7 @@ module Deployinator
 
     # disabled stacks (stack file still present but hidden in the UI)
     def disabled_stacks
-        ['cicstudynow','gotfootsores','studyfootulcers','smartdev']
+        ['cicstudynow','gotfootsores','studyfootulcers','smartdev','smart','fsgs','referanallstar','goutstudynow','mygoutstudy','migrainestudynow']
     end
 
     # Running environment for deployinator
