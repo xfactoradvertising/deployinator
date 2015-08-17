@@ -110,7 +110,7 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{smartpatienttracker_git_checkout_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
 
           # install dependencies
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
@@ -138,6 +138,9 @@ module Deployinator
           # take application offline (maintenance mode)
           # return true so command is non-fatal (artisan doesn't exist the first time)
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
+
+          # sync new app contents
+          # run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && rsync -ave ssh --delete --force --exclude='app/storage/*/**' --delete-excluded  --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
 
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip}:#{site_path}}
