@@ -113,7 +113,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.env*' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
 
           # install dependencies
-          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # run db migrations
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
