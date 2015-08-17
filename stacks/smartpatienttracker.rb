@@ -62,7 +62,7 @@ module Deployinator
       end
 
       def smartpatienttracker_dev(options={})
-        old_build = Version.get_build(smartpatienttracker_dev_version)
+        old_build = smartpatienttracker_dev_build
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
         send(git_cmd, stack, 'sh -c')
@@ -131,7 +131,7 @@ module Deployinator
       end
 
       def smartpatienttracker_prod(options={})
-        old_build = Version.get_build(smartpatienttracker_prod_version)
+        old_build = smartpatienttracker_prod_build
         build = smartpatienttracker_stage_build
 
         begin
