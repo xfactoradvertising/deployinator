@@ -102,12 +102,7 @@ module Deployinator
       def smartpatienttracker_stage(options={})
         old_build = smartpatienttracker_stage_build
 
-        git_cmd = old_build ? :git_freshen_clone : :github_clone
-        send(git_cmd, stack, 'sh -c')
-
-        git_bump_version stack, ''
-
-        build = smartpatienttracker_head_build
+        build = smartpatienttracker_dev_build
 
         begin
           # take application offline (maintenance mode)
