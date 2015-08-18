@@ -102,7 +102,7 @@ module Deployinator
           run_cmd %Q{ssh #{reminders_user}@#{reminders_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
 
           # run database migrations
-          run_cmd %Q{ssh #{reminders_user}@#{reminders_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          run_cmd %Q{ssh #{reminders_user}@#{reminders_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{reminders_user}@#{reminders_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
