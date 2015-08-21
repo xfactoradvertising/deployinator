@@ -2,7 +2,7 @@ module Deployinator
   module Stacks
     module Smartpatienttracker
       def smartpatienttracker_git_repo_url
-        "git@github.com:xfactoradvertising/smart.git"
+        'git@github.com:xfactoradvertising/smart.git'
       end
 
       def smartpatienttracker_user
@@ -18,7 +18,7 @@ module Deployinator
       end
 
       def checkout_root
-        "/tmp"
+        '/tmp'
       end
 
       def site_root
@@ -76,7 +76,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down --env=dev || true} # return true so command is non-fatal
 
           # sync relevant site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{smartpatienttracker_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{smartpatienttracker_git_checkout_path}/ #{site_path}}
 
            # ensure storage is writable (shouldn't have to do this but running webserver as different user)
           run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
@@ -112,7 +112,7 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.env*' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.env*' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
 
           # install dependencies
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
@@ -142,7 +142,7 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          # run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && rsync -ave ssh --delete --force --exclude='app/storage/*/**' --delete-excluded  --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
+          # run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && rsync -ave ssh --delete --force --exclude='app/storage/*/**' --delete-excluded  --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
 
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip}:#{site_path}}
@@ -156,9 +156,9 @@ module Deployinator
           # take application online
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
 
-          log_and_stream "Done!<br>"
+          log_and_stream 'Done!<br>'
         rescue
-          log_and_stream "Failed!<br>"
+          log_and_stream 'Failed!<br>'
         end
 
         log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
