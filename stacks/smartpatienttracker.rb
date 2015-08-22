@@ -61,7 +61,7 @@ module Deployinator
         %x{git ls-remote #{smartpatienttracker_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def smartpatienttracker_dev(options={})
+      def smartpatienttracker_dev
         old_build = smartpatienttracker_dev_build
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
@@ -92,16 +92,16 @@ module Deployinator
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
 
-          log_and_stream "Done!<br>"
+          log_and_stream 'Done!<br>'
         rescue
-          log_and_stream "Failed!<br>"
+          log_and_stream 'Failed!<br>'
         end
 
         log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
 
       end
 
-      def smartpatienttracker_stage(options={})
+      def smartpatienttracker_stage
         old_build = smartpatienttracker_stage_build
 
         build = smartpatienttracker_dev_build
@@ -123,16 +123,16 @@ module Deployinator
           # put application back online
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
 
-          log_and_stream "Done!<br>"
+          log_and_stream 'Done!<br>'
         rescue
-          log_and_stream "Failed!<br>"
+          log_and_stream 'Failed!<br>'
         end
 
         log_and_shout(:old_build => old_build, :build => build, :env => 'STAGE', :send_email => false) # TODO make email true
 
       end
 
-      def smartpatienttracker_prod(options={})
+      def smartpatienttracker_prod
         old_build = smartpatienttracker_prod_build
         build = smartpatienttracker_stage_build
 
