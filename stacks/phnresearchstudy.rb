@@ -49,12 +49,12 @@ module Deployinator
         Version.get_build(phnresearchstudy_stage_version)
       end
 
-      def phnresearchstudy_prod_version
+      def phnresearchstudy_production_version
         %x{ssh #{phnresearchstudy_user}@#{phnresearchstudy_prod_ip} 'cat #{site_path}/version.txt'}
       end
 
-      def phnresearchstudy_prod_build
-        Version.get_build(phnresearchstudy_prod_version)
+      def phnresearchstudy_production_build
+        Version.get_build(phnresearchstudy_production_version)
       end
 
       def phnresearchstudy_head_build
@@ -134,7 +134,7 @@ module Deployinator
       end
 
       def phnresearchstudy_prod
-        old_build = phnresearchstudy_prod_build
+        old_build = phnresearchstudy_production_build
         build = phnresearchstudy_stage_build
 
         begin
@@ -180,14 +180,14 @@ module Deployinator
             :current_version => phnresearchstudy_stage_version,
             :current_build => phnresearchstudy_stage_build,
             :next_build => phnresearchstudy_dev_build
-          }#,
-          # {
-          #   :name => 'prod',
-          #   :method => 'phnresearchstudy_prod',
-          #   :current_version => phnresearchstudy_prod_version,
-          #   :current_build => phnresearchstudy_prod_build,
-          #   :next_build => phnresearchstudy_stage_build
-          # }        
+          },
+          {
+            :name => 'prod',
+            :method => 'phnresearchstudy_prod',
+            :current_version => phnresearchstudy_production_version,
+            :current_build => phnresearchstudy_production_build,
+            :next_build => phnresearchstudy_stage_build
+          }        
         ]
       end
     end
