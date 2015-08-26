@@ -61,7 +61,7 @@ module Deployinator
         %x{git ls-remote #{smartpatienttracker_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def smartpatienttracker_dev
+      def smartpatienttracker_dev(options={})
         old_build = smartpatienttracker_dev_build
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
@@ -101,7 +101,7 @@ module Deployinator
 
       end
 
-      def smartpatienttracker_stage
+      def smartpatienttracker_stage(options={})
         old_build = smartpatienttracker_stage_build
 
         build = smartpatienttracker_dev_build
@@ -132,7 +132,7 @@ module Deployinator
 
       end
 
-      def smartpatienttracker_prod
+      def smartpatienttracker_prod(options={})
         old_build = smartpatienttracker_prod_build
         build = smartpatienttracker_stage_build
 
