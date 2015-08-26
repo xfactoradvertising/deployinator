@@ -61,7 +61,7 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down --env=dev || true} # return true so command is non-fatal
 
           # sync site files to final destination
           run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" #{<%= stack %>_git_checkout_path}/ #{site_path}}
@@ -79,7 +79,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev}
 
           # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
 
           log_and_stream "Done!<br>"
         rescue
