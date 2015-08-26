@@ -180,7 +180,7 @@ module Deployinator
             :current_version => phnresearchstudy_stage_version,
             :current_build => phnresearchstudy_stage_build,
             :next_build => phnresearchstudy_dev_build
-          # },
+          }#,
           # {
           #   :name => 'prod',
           #   :method => 'phnresearchstudy_prod',
