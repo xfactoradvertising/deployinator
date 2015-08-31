@@ -61,6 +61,7 @@ module Deployinator
         %x{git ls-remote #{smartpatienttracker_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
+      # NOTE this options hash is unused but it is still passed by deployinator and removing it will break things
       def smartpatienttracker_dev(options={})
         old_build = smartpatienttracker_dev_build
 
@@ -101,6 +102,7 @@ module Deployinator
 
       end
 
+      # NOTE this options hash is unused but it is still passed by deployinator and removing it will break things
       def smartpatienttracker_stage(options={})
         old_build = smartpatienttracker_stage_build
 
@@ -112,9 +114,9 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.env*' --filter "protect .env*" --filter "protect down" --filter "protect vendor/**" --filter "protect app/storage/**" --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded --exclude='app/storage/*/**' --exclude='.env*' --filter "protect .env*" --filter "protect down" --filter "protect app/storage/**" --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
 
-          # install dependencies
+          # generate optimized autoload files
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # run db migrations
@@ -132,6 +134,7 @@ module Deployinator
 
       end
 
+      # NOTE this options hash is unused but it is still passed by deployinator and removing it will break things
       def smartpatienttracker_prod(options={})
         old_build = smartpatienttracker_prod_build
         build = smartpatienttracker_stage_build
@@ -142,16 +145,13 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          # run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && rsync -ave ssh --delete --force --exclude='app/storage/*/**' --delete-excluded  --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{site_path}/ #{reminders_user}@#{reminders_prod_ip}:#{site_path}"}
-
-          # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip}:#{site_path}}
-
-          # run database migrations
-          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && rsync -ave ssh --delete --force --delete-excluded --exclude='app/storage/*/**' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' --filter "protect app/files/**" --filter "protect public/assets/audio/**" #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip}:#{site_path}"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # run database migrations
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed"}
 
           # take application online
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
