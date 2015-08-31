@@ -10,3 +10,5 @@ run_logs/current*
 vendor/bundle
 .yardoc
 .DS_Store
+.idea
+*.iml
