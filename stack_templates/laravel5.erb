@@ -1,0 +1,141 @@
+module Deployinator
+  module Stacks
+    module <%= Mustache.classify(stack)  %>
+      def <%= stack %>_git_repo_url
+        "git@github.com:xfactoradvertising/bearded-dangerzone.git"
+      end
+
+      def <%= stack %>_user
+        'www-data'
+      end
+
+      def <%= stack %>_stage_ip
+        '52.25.81.13'
+      end
+
+      def <%= stack %>_prod_ip
+        '54.201.142.33'
+      end
+
+      def checkout_root
+        "/tmp"
+      end
+
+      def site_root
+        '/var/www/sites'
+      end
+
+      def site_path
+        "#{site_root}/#{stack}"
+      end
+
+      def <%= stack %>_git_checkout_path
+        "#{checkout_root}/#{stack}"
+      end
+
+      def <%= stack %>_stage_version
+        %x{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def <%= stack %>_stage_build
+        Version.get_build(<%= stack %>_stage_version)
+      end
+
+      def <%= stack %>_prod_version
+        %x{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def <%= stack %>_prod_build
+        Version.get_build(<%= stack %>_prod_version)
+      end
+
+      def <%= stack %>_head_build
+        %x{git ls-remote #{<%= stack %>_git_repo_url} HEAD | cut -c1-7}.chomp
+      end
+
+      def <%= stack %>_stage(options={})
+        old_build = <%= stack %>_stage_build
+
+        git_cmd = old_build ? :git_freshen_clone : :github_clone
+        send(git_cmd, stack, 'sh -c')
+
+        git_bump_version stack, ''
+
+        build = <%= stack %>_head_build
+
+        begin
+          # take application offline (maintenance mode)
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
+
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{<%= stack %>_git_checkout_path}/ #{<%= stack %>_user}@#{<%= stack %>_stage_ip}:#{site_path}}
+
+          # install dependencies
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
+
+          # run db migrations
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
+
+          # put application back online
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
+
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'STAGE', :send_email => false) # TODO make email true
+
+      end
+
+      def <%= stack %>_prod(options={})
+        old_build = <%= stack %>_prod_build
+        build = <%= stack %>_stage_build
+
+        begin
+          # take application offline (maintenance mode)
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
+
+          # sync new app contents
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{<%= stack %>_user}@#{<%= stack %>_prod_ip}:#{site_path}"}
+
+          # run database migrations
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed"}
+
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # take application online
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
+
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
+      end
+
+      def <%= stack %>_environments
+        [
+          {
+            :name => 'stage',
+            :method => '<%= stack %>_stage',
+            :current_version => <%= stack %>_stage_version,
+            :current_build => <%= stack %>_stage_build,
+            :next_build => <%= stack %>_head_build
+          },
+          {
+            :name => 'prod',
+            :method => '<%= stack %>_prod',
+            :current_version => <%= stack %>_prod_version,
+            :current_build => <%= stack %>_prod_build,
+            :next_build => <%= stack %>_stage_build
+          }        
+        ]
+      end
+    end
+  end
+end
