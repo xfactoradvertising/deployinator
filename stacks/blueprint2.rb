@@ -2,7 +2,7 @@ module Deployinator
   module Stacks
     module Blueprint2
       def blueprint2_git_repo_url
-        "git@github.com:xfactoradvertising/bearded-dangerzone.git"
+        "git@github.com:xfactoradvertising/blueprint.git"
       end
 
       def blueprint2_user

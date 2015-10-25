@@ -2,7 +2,7 @@ module Deployinator
   module Stacks
     module <%= Mustache.classify(stack)  %>
       def <%= stack %>_git_repo_url
-        "git@github.com:xfactoradvertising/bearded-dangerzone.git"
+        "git@github.com:xfactoradvertising/<%= stack %>.git"
       end
 
       def <%= stack %>_user
