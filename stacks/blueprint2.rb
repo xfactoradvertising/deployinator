@@ -79,7 +79,7 @@ module Deployinator
           run_cmd %Q{ssh #{blueprint2_user}@#{blueprint2_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
           # run db migrations
-          run_cmd %Q{ssh #{blueprint2_user}@#{blueprint2_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
+          run_cmd %Q{ssh #{blueprint2_user}@#{blueprint2_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate:refresh --seed --env=stage"}
 
           # put application back online
           run_cmd %Q{ssh #{blueprint2_user}@#{blueprint2_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
