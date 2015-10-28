@@ -76,7 +76,7 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev}
+          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev}
 
           # put application back online
           run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
@@ -103,7 +103,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip}:#{site_root}}
 
           # run database migrations
-          run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          #run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
