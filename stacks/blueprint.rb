@@ -1,6 +1,6 @@
 module Deployinator
   module Stacks
-    module blueprint
+    module Blueprint
       def blueprint_git_repo_url
         "git@github.com:xfactoradvertising/blueprint.git"
       end
