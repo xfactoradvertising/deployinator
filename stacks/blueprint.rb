@@ -50,18 +50,17 @@ module Deployinator
       end
 
       def blueprint_head_build
-        # NOTE explicitly getting branch HEAD revision here (could move to a helper)
-        # %x{git ls-remote #{blueprint_git_repo_url} HEAD | cut -c1-7}.chomp
-        %x{git ls-remote #{blueprint_git_repo_url} blueprint HEAD | tail -1 | cut -c1-7}.chomp
+        %x{git ls-remote #{blueprint_git_repo_url} HEAD | cut -c1-7}.chomp
+        # %x{git ls-remote #{blueprint_git_repo_url} blueprint HEAD | tail -1 | cut -c1-7}.chomp
       end
 
       def blueprint_stage(options={})
         old_build = blueprint_stage_build
 
-        #git_cmd = old_build ? :git_freshen_clone : :github_clone
-        git_cmd = old_build ? :git_freshen_clone_branch : :github_clone_branch
-        #send(git_cmd, stack, 'sh -c')
-        send(git_cmd, stack, 'blueprint', 'sh -c')
+        git_cmd = old_build ? :git_freshen_clone : :github_clone
+        # git_cmd = old_build ? :git_freshen_clone_branch : :github_clone_branch
+        send(git_cmd, stack, 'sh -c')
+        # send(git_cmd, stack, 'blueprint', 'sh -c')
 
         git_bump_version stack, ''
 
