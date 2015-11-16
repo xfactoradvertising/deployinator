@@ -29,12 +29,12 @@ module Deployinator
         "#{checkout_root}/#{stack}"
       end
 
-      def recognitionstudy_dev_version
+      def recognitionstudy_stage_version
         %x{cat #{recognitionstudy_git_checkout_path}/version.txt}
       end
 
-      def recognitionstudy_dev_build
-        Version.get_build(recognitionstudy_dev_version)
+      def recognitionstudy_stage_build
+        Version.get_build(recognitionstudy_stage_version)
       end
 
       def recognitionstudy_prod_version
@@ -49,8 +49,8 @@ module Deployinator
         %x{git ls-remote #{recognitionstudy_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def recognitionstudy_dev(options={})
-        old_build = Version.get_build(recognitionstudy_dev_version)
+      def recognitionstudy_stage(options={})
+        old_build = Version.get_build(recognitionstudy_stage_version)
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
         send(git_cmd, stack, 'sh -c')
@@ -61,7 +61,7 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down --env=dev || true} # return true so command is non-fatal
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down --env=stage || true} # return true so command is non-fatal
 
           # sync site files to final destination
           run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' --filter "protect .env*" #{recognitionstudy_git_checkout_path}/ #{site_path}}
@@ -76,10 +76,10 @@ module Deployinator
           run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
 
           # run db migrations
-          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev}
+          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage}
 
           # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
+          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=stage}
 
           log_and_stream "Done!<br>"
         rescue
@@ -92,7 +92,7 @@ module Deployinator
 
       def recognitionstudy_prod(options={})
         old_build = Version.get_build(recognitionstudy_prod_version)
-        build = recognitionstudy_dev_build
+        build = recognitionstudy_stage_build
 
         begin
           # take application offline (maintenance mode)
@@ -122,10 +122,10 @@ module Deployinator
       def recognitionstudy_environments
         [
           {
-            :name => 'dev',
-            :method => 'recognitionstudy_dev',
-            :current_version => recognitionstudy_dev_version,
-            :current_build => recognitionstudy_dev_build,
+            :name => 'stage',
+            :method => 'recognitionstudy_stage',
+            :current_version => recognitionstudy_stage_version,
+            :current_build => recognitionstudy_stage_build,
             :next_build => recognitionstudy_head_build
           },
           {
@@ -133,7 +133,7 @@ module Deployinator
             :method => 'recognitionstudy_prod',
             :current_version => recognitionstudy_prod_version,
             :current_build => recognitionstudy_prod_build,
-            :next_build => recognitionstudy_dev_build
+            :next_build => recognitionstudy_stage_build
           }        
         ]
       end
