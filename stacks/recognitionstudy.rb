@@ -102,11 +102,11 @@ module Deployinator
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip}:#{site_root}}
 
-          # run database migrations
-          #run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
-
           # generate optimized autoload files
           run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # run db migrations
+          run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed"}
 
           # take application online
           run_cmd %Q{ssh #{recognitionstudy_prod_user}@#{recognitionstudy_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
