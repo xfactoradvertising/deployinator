@@ -101,11 +101,11 @@ module Deployinator
           # sync new app contents
           run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{<%= stack %>_user}@#{<%= stack %>_prod_ip}:#{site_path}"}
 
-          # run database migrations
-          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed"}
-
           # generate optimized autoload files
           run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # run database migrations
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --seed"}
 
           # take application online
           run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
