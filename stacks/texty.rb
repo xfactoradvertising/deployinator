@@ -74,6 +74,9 @@ module Deployinator
           # install dependencies
           run_cmd %Q{ssh #{texty_user}@#{texty_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
+          # update autoload
+          run_cmd %Q{ssh #{texty_user}@#{texty_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload"}
+
           # run db migrations
           run_cmd %Q{ssh #{texty_user}@#{texty_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
 
