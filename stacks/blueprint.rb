@@ -51,16 +51,13 @@ module Deployinator
 
       def blueprint_head_build
         %x{git ls-remote #{blueprint_git_repo_url} HEAD | cut -c1-7}.chomp
-        # %x{git ls-remote #{blueprint_git_repo_url} blueprint HEAD | tail -1 | cut -c1-7}.chomp
       end
 
       def blueprint_stage(options={})
         old_build = blueprint_stage_build
 
         git_cmd = old_build ? :git_freshen_clone : :github_clone
-        # git_cmd = old_build ? :git_freshen_clone_branch : :github_clone_branch
         send(git_cmd, stack, 'sh -c')
-        # send(git_cmd, stack, 'blueprint', 'sh -c')
 
         git_bump_version stack, ''
 
@@ -78,7 +75,7 @@ module Deployinator
           run_cmd %Q{ssh #{blueprint_user}@#{blueprint_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
           # run db migrations
-          run_cmd %Q{ssh #{blueprint_user}@#{blueprint_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate:refresh --seed --env=stage"}
+          run_cmd %Q{ssh #{blueprint_user}@#{blueprint_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
 
           # put application back online
           run_cmd %Q{ssh #{blueprint_user}@#{blueprint_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
@@ -104,11 +101,11 @@ module Deployinator
           # sync new app contents
           run_cmd %Q{ssh #{blueprint_user}@#{blueprint_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{blueprint_user}@#{blueprint_prod_ip}:#{site_path}"}
 
-          # run database migrations
-          run_cmd %Q{ssh #{blueprint_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed"}
-
           # generate optimized autoload files
           run_cmd %Q{ssh #{blueprint_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # run database migrations
+          run_cmd %Q{ssh #{blueprint_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --seed"}
 
           # take application online
           run_cmd %Q{ssh #{blueprint_user}@#{blueprint_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
