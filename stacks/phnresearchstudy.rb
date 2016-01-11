@@ -46,14 +46,21 @@ module Deployinator
       end
 
       def phnresearchstudy_head_build
-        %x{git ls-remote #{phnresearchstudy_git_repo_url} HEAD | cut -c1-7}.chomp
+        # pointing to blueprint-v2 branch
+        %x{git ls-remote #{phnresearchstudy_git_repo_url} blueprint-v2 HEAD | tail -1 |cut -c1-7}.chomp
+
+        #{}%x{git ls-remote #{phnresearchstudy_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
       def phnresearchstudy_dev(options={})
         old_build = Version.get_build(phnresearchstudy_dev_version)
 
-        git_cmd = old_build ? :git_freshen_clone : :github_clone
-        send(git_cmd, stack, 'sh -c')
+        # pointing to blueprint-v2 branch
+        git_cmd = old_build ? :git_freshen_clone_branch : :github_clone_branch
+        send(git_cmd, stack, 'blueprint-v2', 'sh -c')
+
+        # git_cmd = old_build ? :git_freshen_clone : :github_clone
+        # send(git_cmd, stack, 'sh -c')
 
         git_bump_version stack, ''
 
