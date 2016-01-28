@@ -82,7 +82,10 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan down --env=dev || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded --exclude='app/storage/*/**' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{smartpatienttracker_git_checkout_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip}:#{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter "protect vendor/" --filter 'protect app/storage/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{smartpatienttracker_git_checkout_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip}:#{site_path}}
+
+          # install dependencies
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
