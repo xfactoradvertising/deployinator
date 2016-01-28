@@ -94,7 +94,7 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev"}
 
           # put application back online
-          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan up --env=dev"}
 
           log_and_stream 'Done!<br>'
         rescue
