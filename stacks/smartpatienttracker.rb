@@ -10,7 +10,7 @@ module Deployinator
       end
 
       def smartpatienttracker_dev_ip
-        '54.214.232.175'
+        '52.32.55.10'
       end
 
       def smartpatienttracker_stage_ip
