@@ -9,6 +9,10 @@ module Deployinator
         'www-data'
       end
 
+      def smartpatienttracker_dev_ip
+        '52.32.55.10'
+      end
+
       def smartpatienttracker_stage_ip
         '52.25.81.13'
       end
@@ -34,7 +38,7 @@ module Deployinator
       end
 
       def smartpatienttracker_dev_version
-        %x{cat #{site_path}/version.txt}
+        %x{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} 'cat #{site_path}/version.txt'}
       end
 
       def smartpatienttracker_dev_build
@@ -74,32 +78,30 @@ module Deployinator
 
         begin
           # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down --env=dev || true} # return true so command is non-fatal
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan down --env=dev || true"}
 
-          # sync relevant site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/*/**' --exclude='.git/' --exclude='.gitignore' --filter 'protect .env*' --filter 'protect down' --filter 'protect vendor/**' --filter 'protect app/storage/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{smartpatienttracker_git_checkout_path}/ #{site_path}}
-
-           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
-          run_cmd %Q{chmod 777 #{site_path}/app/files}
-          run_cmd %Q{chmod 777 #{site_path}/files}
-          run_cmd %Q{chmod 777 #{site_path}/public/assets/audio}
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter "protect vendor/" --filter 'protect app/storage/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{smartpatienttracker_git_checkout_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip}:#{site_path}}
 
           # install dependencies
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
+
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=dev"}
 
           # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up --env=dev}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && /usr/bin/php artisan up --env=dev"}
 
           log_and_stream 'Done!<br>'
         rescue
           log_and_stream 'Failed!<br>'
         end
 
-        log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
+        log_and_shout(:old_build => old_build, :build => build, :env => 'DEV', :send_email => false) # TODO make email true
 
       end
 
@@ -115,7 +117,7 @@ module Deployinator
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded --exclude='app/storage/*/**' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}}
+          run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_dev_ip} "cd #{site_path} && rsync -ave ssh --delete --force --delete-excluded --exclude='app/storage/*/**' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter 'protect app/storage/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{site_path}/ #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip}:#{site_path}"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smartpatienttracker_user}@#{smartpatienttracker_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
