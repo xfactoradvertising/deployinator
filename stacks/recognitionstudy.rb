@@ -73,7 +73,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='app/storage/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env*' --filter 'protect .env*' --filter 'protect down' --filter "protect vendor/" --filter 'protect app/storage/**' #{recognitionstudy_git_checkout_path}/ #{recognitionstudy_user}@#{recognitionstudy_stage_ip}:#{site_path}}
 
           # install dependencies
-          run_cmd %Q{ssh #{recognitionstudy_user}@#{recognitionstudy_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-stage"}
+          run_cmd %Q{ssh #{recognitionstudy_user}@#{recognitionstudy_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{recognitionstudy_user}@#{recognitionstudy_stage_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
