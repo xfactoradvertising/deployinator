@@ -33,14 +33,6 @@ module Deployinator
         "#{checkout_root}/#{stack}"
       end
 
-      def pancreaticcancerandyou_dev_build
-        Version.get_build(pancreaticcancerandyou_dev_version)
-      end
-
-      def pancreaticcancerandyou_dev_version
-        %x{cat #{pancreaticcancerandyou_git_checkout_path}/version.txt}
-      end
-
       def pancreaticcancerandyou_stage_build
         Version.get_build(pancreaticcancerandyou_stage_version)
       end
@@ -61,46 +53,6 @@ module Deployinator
         %x{git ls-remote #{pancreaticcancerandyou_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
-      def pancreaticcancerandyou_dev(options={})
-        old_build = pancreaticcancerandyou_dev_build
-
-        git_cmd = old_build ? :git_freshen_clone : :github_clone
-        send(git_cmd, stack, 'sh -c')
-
-        git_bump_version stack, ''
-
-        build = pancreaticcancerandyou_head_build
-
-        begin
-          # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
-
-          # sync site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' #{pancreaticcancerandyou_git_checkout_path}/ #{site_path}}
-
-          # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{pancreaticcancerandyou_git_checkout_path}/app/storage/ #{site_path}/app/storage}
-
-          # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
-
-          # install dependencies (vendor dir was probably completely removed via above)
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
-
-          # run db migrations
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate}
-
-          # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
-
-          log_and_stream "Done!<br>"
-        rescue
-          log_and_stream "Failed!<br>"
-        end
-
-        log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
-      end
-      
       def pancreaticcancerandyou_stage(options={})
         old_build = pancreaticcancerandyou_stage_build
 
@@ -119,10 +71,10 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{pancreaticcancerandyou_git_checkout_path}/ #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_stage_ip}:#{site_path}}
 
           # additionally sync top-level storage dirs (but not their contents)
-          # run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{pancreaticcancerandyou_git_checkout_path}/app/storage/ #{site_path}/app/storage}
+          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{pancreaticcancerandyou_git_checkout_path}/app/storage/ #{site_path}/app/storage}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          # run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
 
           # install dependencies (vendor dir was probably completely removed via above)
           run_cmd %Q{ssh #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
@@ -170,46 +122,8 @@ module Deployinator
         log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
       end
 
-      def version environment
-        "1.0 #{ environment }"
-      end
-
-      def build environment
-        "1 #{ environment }"
-      end
-
-      def head_build environment
-        pancreaticcancerandyou_head_build
-      end
-
-      def user environment
-        'www-data'
-      end
-
-      def ip environment
-        case environment
-        when :greg
-          '52.25.81.13'
-        when :stage
-          '52.25.81.13'
-        when :prod
-          '54.201.142.33'
-        end
-      end
-
-      def greg
-        run_cmd %Q{cd #{site_path} && touch greg.txt }
-      end
-
       def pancreaticcancerandyou_environments
         [
-        #  {
-        #    :name => 'dev',
-        #    :method => 'pancreaticcancerandyou_dev',
-        #    :current_version => pancreaticcancerandyou_dev_version,
-        #    :current_build => pancreaticcancerandyou_dev_build,
-        #    :next_build => pancreaticcancerandyou_head_build
-        #  },
           {
             :name => 'stage',
             :method => 'pancreaticcancerandyou_stage',
@@ -223,13 +137,6 @@ module Deployinator
             :current_version => pancreaticcancerandyou_prod_version,
             :current_build => pancreaticcancerandyou_prod_build,
             :next_build => pancreaticcancerandyou_dev_build
-          },        
-          {
-            :name => 'greg',
-            :method => 'greg',
-            :current_version => version( :greg ),
-            :current_build => build( :greg ),
-            :next_build => head_build
           }
         ]
       end
