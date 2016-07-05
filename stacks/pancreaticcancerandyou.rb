@@ -71,10 +71,10 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{pancreaticcancerandyou_git_checkout_path}/ #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_stage_ip}:#{site_path}}
 
           # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{pancreaticcancerandyou_git_checkout_path}/app/storage/ #{site_path}/app/storage}
+          # run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{pancreaticcancerandyou_git_checkout_path}/app/storage/ #{site_path}/app/storage}
 
           # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          # run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
 
           # install dependencies (vendor dir was probably completely removed via above)
           run_cmd %Q{ssh #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
