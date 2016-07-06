@@ -136,7 +136,7 @@ module Deployinator
             :method => 'pancreaticcancerandyou_prod',
             :current_version => pancreaticcancerandyou_prod_version,
             :current_build => pancreaticcancerandyou_prod_build,
-            :next_build => pancreaticcancerandyou_prod_build
+            :next_build => pancreaticcancerandyou_stage_build
           }
         ]
       end
