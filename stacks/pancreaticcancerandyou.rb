@@ -103,7 +103,7 @@ module Deployinator
           run_cmd %Q{ssh #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter "protect .env.php" --filter "protect down" #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_prod_ip}:#{site_root}}
+          run_cmd %Q{ssh #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_stage_ip} "cd #{site_path} && rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter 'protect .env.php' --filter 'protect down' #{site_path}/ #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_prod_ip}:#{site_path}"}
 
           # run database migrations
           run_cmd %Q{ssh #{pancreaticcancerandyou_user}@#{pancreaticcancerandyou_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
