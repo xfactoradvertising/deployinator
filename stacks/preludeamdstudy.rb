@@ -75,7 +75,7 @@ module Deployinator
           run_cmd %Q{ssh #{preludeamdstudy_user}@#{preludeamdstudy_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
           # run db migrations
-          run_cmd %Q{ssh #{preludeamdstudy_user}@#{preludeamdstudy_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
+          # run_cmd %Q{ssh #{preludeamdstudy_user}@#{preludeamdstudy_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
 
           # put application back online
           run_cmd %Q{ssh #{preludeamdstudy_user}@#{preludeamdstudy_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
