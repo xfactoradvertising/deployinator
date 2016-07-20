@@ -1,6 +1,6 @@
 module Deployinator
   module Stacks
-    module CymbaltaPregnancyRegistry
+    module Cymbaltapregnancyregistry
       # Helper methods
       def artisan_down
         opt = environment == :stage ? "--env=stage " : ""
