@@ -8,7 +8,7 @@ $LOAD_PATH.unshift maindir unless $LOAD_PATH.include?(maindir)
 
 require 'test/unit'
 
-require 'libraries'
+# require 'libraries'
 
 def log_in_as(user)
   ENV['HTTP_X_USERNAME'] = user
