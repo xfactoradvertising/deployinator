@@ -1,166 +1,139 @@
 module Deployinator
   module Stacks
     module Cymbaltapregnancyregistry
-      # Helper methods
-      def artisan_down
-        opt = environment == :stage ? "--env=stage " : ""
-        ssh_cmd "/usr/bin/php artisan down #{ opt }|| true"
+      def cymbaltapregnancyregistry_git_repo_url
+        "git@github.com:xfactoradvertising/cymbaltapregnancyregistry.git"
       end
 
-      def rsync_site_stage
-        rsync = %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**"}
-
-        source = checkout_path
-        destination = %Q{#{ user }@#{ ip }:#{ site_path }}
-
-        %Q{#{ rsync } #{ source } #{ destination }} 
+      def cymbaltapregnancyregistry_user
+        'www-data'
       end
 
-      def rsync_site_prod
-        rsync = %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} --filter 'protect .env.php' --filter 'protect down'}
-
-        source = site_path
-        destination = %Q{#{ user }@#{ ip }:#{ site_path }}
-
-        ssh_cmd %Q{#{ rsync } #{ source } #{ destination }}
+      def cymbaltapregnancyregistry_stage_ip
+        '52.25.81.13'
       end
 
-      def composer_install
-        opt = environment == :stage ? 
-          "install --no-dev" : "dump-autoload -o"
-        ssh_cmd "/usr/local/bin/composer #{ opt }"
+      def cymbaltapregnancyregistry_prod_ip
+        '54.201.142.33'
       end
 
-      def artisan_migrate
-        opt = environment == :stage ? "--seed --env=stage" : "--force"
-        ssh_cmd "/usr/bin/php artisan migrate #{ opt }"
+      def checkout_root
+        "/tmp"
       end
 
-      def artisan_up
-        opt = environment == :stage ? "--env=stage" : ""
-        ssh_cmd "/usr/bin/php artisan up #{ opt }"
-      end
-
-      # Utility methods
-      def ssh_cmd command
-        %Q{ssh #{ user }@#{ ip } cd #{ site_path } && #{ command }}
-      end
-
-      def environment env = nil
-        @environment = env if env
-        @environment 
-      end
-
-      def user
-        "www-data"
-      end
-
-      def ip
-        case environment
-        when :stage
-          '52.25.81.13'
-        when :prod
-          '54.201.142.33'
-        else
-          raise "Invalid environment"
-        end
+      def site_root
+        '/var/www/sites'
       end
 
       def site_path
-        '/var/www/sites/cymbaltapregnancyregistry'
+        "#{site_root}/#{stack}"
       end
 
-      def checkout_path
-        '/tmp/cymbaltapregnancyregistry'
+      def cymbaltapregnancyregistry_git_checkout_path
+        "#{checkout_root}/#{stack}"
       end
 
-      def deploy
+      def cymbaltapregnancyregistry_stage_version
+        %x{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def cymbaltapregnancyregistry_stage_build
+        Version.get_build(cymbaltapregnancyregistry_stage_version)
+      end
+
+      def cymbaltapregnancyregistry_prod_version
+        %x{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} 'cat #{site_path}/version.txt'}
+      end
+
+      def cymbaltapregnancyregistry_prod_build
+        Version.get_build(cymbaltapregnancyregistry_prod_version)
+      end
+
+      def cymbaltapregnancyregistry_head_build
+        %x{git ls-remote #{cymbaltapregnancyregistry_git_repo_url} HEAD | cut -c1-7}.chomp
+      end
+
+      def cymbaltapregnancyregistry_stage(options={})
+        old_build = cymbaltapregnancyregistry_stage_build
+
+        git_cmd = old_build ? :git_freshen_clone : :github_clone
+        send(git_cmd, stack, 'sh -c')
+
+        git_bump_version stack, ''
+
+        build = cymbaltapregnancyregistry_head_build
+
         begin
-          # Putting run_cmd here makes it easy to test
-          # each function.
-          rsync_site = environment == :stage ? 
-            rsync_site_stage : rsync_site_prod
+          # take application offline (maintenance mode)
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "cd #{site_path} && /usr/bin/php artisan down --env=stage || true"}
 
-          run_cmd artisan_down
-          run_cmd rsync_site
-          run_cmd composer_install
-          run_cmd artisan_migrate
-          run_cmd artisan_up
+          # sync new app contents
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{cymbaltapregnancyregistry_git_checkout_path}/ #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip}:#{site_path}}
+
+          # install dependencies
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
+
+          # run db migrations
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "cd #{site_path} && /usr/bin/php artisan migrate --seed --env=stage"}
+
+          # put application back online
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "cd #{site_path} && /usr/bin/php artisan up --env=stage"}
 
           log_and_stream "Done!<br>"
         rescue
           log_and_stream "Failed!<br>"
         end
-      end
-      
-      # Staging methods
-      def stage_version_string
-        "cat #{ checkout_path }/version.txt"
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'STAGE', :send_email => false) # TODO make email true
+
       end
 
-      def stage_version
-        @stage_version ||= %x{stage_version}
+      def cymbaltapregnancyregistry_prod(options={})
+        old_build = cymbaltapregnancyregistry_prod_build
+        build = cymbaltapregnancyregistry_stage_build
+
+        begin
+          # take application offline (maintenance mode)
+          # return true so command is non-fatal (artisan doesn't exist the first time)
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
+
+          # sync new app contents
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip}:#{site_path}"}
+
+          # generate optimized autoload files
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+
+          # run database migrations
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --seed"}
+
+          # take application online
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
+
+          log_and_stream "Done!<br>"
+        rescue
+          log_and_stream "Failed!<br>"
+        end
+
+        log_and_shout(:old_build => old_build, :build => build, :env => 'PROD', :send_email => false) # TODO make email true
       end
 
-      def head_build
-        @head_build ||=
-          %x{git ls-remote #{ checkout_path } HEAD | cut -c1-7}.chomp
-      end
-
-      def cymbaltapregnancyregistry_stage
-        environment :stage
-        old_build = Version.get_build stage_version
-
-        git_cmd = old_build ? :git_freshen_clone : :github_clone
-        send(git_cmd, stack, 'sh -c')
-        git_bump_version stack, ''
-
-        build = head_build
-
-        deploy
-
-        log_and_shout old_build: old_build, build: build, 
-          send_email: false
-      end
-
-      # Production methods
-      def prod_version_string
-        ssh_cmd "cat version.txt"
-      end
-
-      def prod_version
-        @prod_version ||= %x{prod_version_string}
-      end
-
-      def cymbaltapregnancyregistry_prod
-        environment :prod
-        old_build = Version.get_build prod_version
-
-        build = prod_build
-
-        deploy
-
-        log_and_shout old_build: old_build, build: build, 
-          env: 'PROD', send_email: false
-      end
-
-      # Standard Deployinator interface
       def cymbaltapregnancyregistry_environments
         [
           {
             :name => 'stage',
             :method => 'cymbaltapregnancyregistry_stage',
-            :current_version => stage_version,
-            :current_build => Version.get_build( stage_version ),
-            :next_build => head_build
+            :current_version => cymbaltapregnancyregistry_stage_version,
+            :current_build => cymbaltapregnancyregistry_stage_build,
+            :next_build => cymbaltapregnancyregistry_head_build
           },
           {
             :name => 'prod',
             :method => 'cymbaltapregnancyregistry_prod',
-            :current_version => prod_version,
-            :current_build => Version.get_build( prod_version ),
-            :next_build => Version.get_build( stage_version )
-          }
+            :current_version => cymbaltapregnancyregistry_prod_version,
+            :current_build => cymbaltapregnancyregistry_prod_build,
+            :next_build => cymbaltapregnancyregistry_stage_build
+          }        
         ]
       end
     end
