@@ -73,7 +73,7 @@ module Deployinator
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**"  /tmp/xfactoradvertising/ www-data@52.25.81.13:#{ site_path }}
 
           # additionally sync top-level storage dirs (but not their contents)
-          stage_cmd "rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' /tmp/xfactoradvertising/app/storage/ www-data@52.25.81.13:#{site_path}/app/storage"
+          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' /tmp/xfactoradvertising/app/storage/ www-data@52.25.81.13:#{site_path}/app/storage}
 
           stage_cmd "/usr/local/bin/composer install --no-dev"
 
