@@ -13,6 +13,10 @@ module Deployinator
         '54.201.142.33'
       end
 
+      def xfactoradvertising_stage_ip
+        '52.25.81.13'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -64,16 +68,16 @@ module Deployinator
         build = xfactoradvertising_head_build
 
         begin
-          stage_cmd "php artisan down || true"
+          stage_cmd "/usr/bin/php artisan down --env=stage || true"
 
           stage_cmd "rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' /tmp/xfactoradvertising/ #{site_path}"
 
           # additionally sync top-level storage dirs (but not their contents)
           stage_cmd "rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' /tmp/xfactoradvertising/app/storage/ #{site_path}/app/storage"
 
-          stage_cmd "composer install --no-dev"
+          stage_cmd "/usr/local/bin/composer install --no-dev"
 
-          stage_cmd "php artisan up"
+          stage_cmd "/usr/bin/php artisan up --env=stage"
 
           log_and_stream "Done!<br>"
         rescue
