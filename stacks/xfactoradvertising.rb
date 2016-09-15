@@ -49,6 +49,10 @@ module Deployinator
         %x{git ls-remote #{xfactoradvertising_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
+      def stage_cmd cmd_in
+        run_cmd %Q{ ssh www-data@52.25.81.13 cd #{site_path} && #{ cmd_in } }
+      end
+
       def xfactoradvertising_staging(options={})
         old_build = Version.get_build(xfactoradvertising_staging_version)
 
@@ -60,26 +64,16 @@ module Deployinator
         build = xfactoradvertising_head_build
 
         begin
-          # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
+          stage_cmd "php artisan down || true"
 
-          # sync site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/ #{site_path}}
+          stage_cmd "rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' /tmp/xfactoradvertising/ #{site_path}"
 
           # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/app/storage/ #{site_path}/app/storage}
+          stage_cmd "rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' /tmp/xfactoradvertising/app/storage/ #{site_path}/app/storage"
 
-          # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          stage_cmd "composer install --no-dev"
 
-          # install dependencies (vendor dir was probably completely removed via above)
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
-
-          # run db migrations
-          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh} # TODO remove the :refresh
-
-          # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
+          stage_cmd "php artisan up"
 
           log_and_stream "Done!<br>"
         rescue
@@ -87,7 +81,6 @@ module Deployinator
         end
 
         log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
-
       end
 
       def xfactoradvertising_prod(options={})
