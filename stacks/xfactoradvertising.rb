@@ -54,7 +54,7 @@ module Deployinator
       end
 
       def stage_cmd cmd_in
-        run_cmd %Q{ ssh www-data@52.25.81.13 cd #{site_path} && #{ cmd_in } }
+        run_cmd %Q{ ssh www-data@52.25.81.13 \"cd #{site_path} && #{ cmd_in }\" }
       end
 
       def xfactoradvertising_staging(options={})
