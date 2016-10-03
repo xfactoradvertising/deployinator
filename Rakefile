@@ -72,8 +72,8 @@ end
 end
 
 # TODO just have a single task "new_stack" that takes an argument (the template to use) then change the above task to just be a default.erb template
-desc "Create a new laravel 5 blueprint2 stack. usage: STACK=mysite rake new_blueprint2_stack"
-task :new_blueprint2_stack do
+desc "Create a new laravel 5 ('blueprint2') stack. usage: STACK=mysite rake new_laravel5_stack"
+task :new_laravel5_stack do
 
   require 'mustache/sinatra'
   require 'io/console'
