@@ -60,7 +60,7 @@ module Deployinator
         old_build = smart5_stage_build
 
         git_cmd = old_build ? :git_freshen_clone_branch : :github_clone_branch
-        send(git_cmd, stack, 'sh -c')
+        send(git_cmd, stack, 'smart5', 'sh -c')
 
         git_bump_version stack, ''
 
