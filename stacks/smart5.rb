@@ -2,7 +2,7 @@ module Deployinator
   module Stacks
     module Smart5
       def smart5_git_repo_url
-        "git@github.com:xfactoradvertising/smart5.git"
+        "git@github.com:xfactoradvertising/smart.git"
       end
 
       def smart5_user
@@ -50,13 +50,16 @@ module Deployinator
       end
 
       def smart5_head_build
-        %x{git ls-remote #{smart5_git_repo_url} HEAD | cut -c1-7}.chomp
+        #%x{git ls-remote #{smart5_git_repo_url} HEAD | cut -c1-7}.chomp
+
+        # NOTE explicitly getting smart5 branch HEAD revision here
+        %x{git ls-remote #{smart5_git_repo_url} smart5 HEAD | tail -1 | cut -c1-7}.chomp
       end
 
       def smart5_stage(options={})
         old_build = smart5_stage_build
 
-        git_cmd = old_build ? :git_freshen_clone : :github_clone
+        git_cmd = old_build ? :git_freshen_clone_branch : :github_clone_branch
         send(git_cmd, stack, 'sh -c')
 
         git_bump_version stack, ''
