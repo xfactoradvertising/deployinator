@@ -72,7 +72,7 @@ module Deployinator
           run_cmd %Q{ssh #{smart5_user}@#{smart5_dev_ip} "cd #{site_path} && /usr/bin/php artisan down --env=dev || true"}
 
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{smart5_git_checkout_path}/ #{smart5_user}@#{smart5_dev_ip}:#{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{smart5_git_checkout_path}/ #{smart5_user}@#{smart5_dev_ip}:#{site_path}}
 
           # install dependencies
           run_cmd %Q{ssh #{smart5_user}@#{smart5_dev_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
@@ -102,7 +102,7 @@ module Deployinator
           run_cmd %Q{ssh #{smart5_user}@#{smart5_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{ssh #{smart5_user}@#{smart5_dev_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{smart5_user}@#{smart5_prod_ip}:#{site_path}"}
+          run_cmd %Q{ssh #{smart5_user}@#{smart5_dev_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' --filter 'protect app/files/**' --filter 'protect public/assets/audio/**' #{site_path}/ #{smart5_user}@#{smart5_prod_ip}:#{site_path}"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{smart5_user}@#{smart5_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
