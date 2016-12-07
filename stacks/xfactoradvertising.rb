@@ -13,6 +13,10 @@ module Deployinator
         '54.201.142.33'
       end
 
+      def xfactoradvertising_stage_ip
+        '52.25.81.13'
+      end
+
       def checkout_root
         "/tmp"
       end
@@ -49,6 +53,10 @@ module Deployinator
         %x{git ls-remote #{xfactoradvertising_git_repo_url} HEAD | cut -c1-7}.chomp
       end
 
+      def stage_cmd cmd_in
+        run_cmd %Q{ ssh www-data@52.25.81.13 \"cd #{site_path} && #{ cmd_in }\" }
+      end
+
       def xfactoradvertising_staging(options={})
         old_build = Version.get_build(xfactoradvertising_staging_version)
 
@@ -60,26 +68,16 @@ module Deployinator
         build = xfactoradvertising_head_build
 
         begin
-          # take application offline (maintenance mode)
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan down || true} # return true so command is non-fatal
+          stage_cmd "/usr/bin/php artisan down --env=stage || true"
 
-          # sync site files to final destination
-          run_cmd %Q{rsync -av --delete --force --exclude='app/storage/' --exclude='/vendor/' --exclude='.git/' --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/ #{site_path}}
+          run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**"  /tmp/xfactoradvertising/ www-data@52.25.81.13:#{ site_path }}
 
           # additionally sync top-level storage dirs (but not their contents)
-          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' #{xfactoradvertising_git_checkout_path}/app/storage/ #{site_path}/app/storage}
+          run_cmd %Q{rsync -lptgoDv --dirs --delete --force --exclude='.gitignore' /tmp/xfactoradvertising/app/storage/ www-data@52.25.81.13:#{site_path}/app/storage}
 
-          # ensure storage is writable (shouldn't have to do this but running webserver as different user)
-          run_cmd %Q{chmod 777 #{site_path}/app/storage/*}
+          stage_cmd "/usr/local/bin/composer install --no-dev"
 
-          # install dependencies (vendor dir was probably completely removed via above)
-          run_cmd %Q{cd #{site_path} && /usr/local/bin/composer install --no-dev}
-
-          # run db migrations
-          #run_cmd %Q{cd #{site_path} && /usr/bin/php artisan migrate:refresh} # TODO remove the :refresh
-
-          # put application back online
-          run_cmd %Q{cd #{site_path} && /usr/bin/php artisan up}
+          stage_cmd "/usr/bin/php artisan up --env=stage"
 
           log_and_stream "Done!<br>"
         rescue
@@ -87,7 +85,6 @@ module Deployinator
         end
 
         log_and_shout(:old_build => old_build, :build => build, :send_email => false) # TODO make email true
-
       end
 
       def xfactoradvertising_prod(options={})
