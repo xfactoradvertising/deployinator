@@ -30,7 +30,7 @@ module Deployinator
       end
 
       def prod_path
-        "#{site_root}/#{lillypregnancyregistry}"
+        "#{site_root}/lillypregnancyregistry"
       end
 
       def cymbaltapregnancyregistry_git_checkout_path
