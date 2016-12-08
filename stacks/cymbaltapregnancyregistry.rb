@@ -29,6 +29,10 @@ module Deployinator
         "#{site_root}/#{stack}"
       end
 
+      def prod_path
+        "#{site_root}/#{lillypregnancyregistry}"
+      end
+
       def cymbaltapregnancyregistry_git_checkout_path
         "#{checkout_root}/#{stack}"
       end
@@ -42,7 +46,7 @@ module Deployinator
       end
 
       def cymbaltapregnancyregistry_prod_version
-        %x{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} 'cat #{site_path}/version.txt'}
+        %x{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} 'cat #{prod_path}/version.txt'}
       end
 
       def cymbaltapregnancyregistry_prod_build
@@ -96,19 +100,19 @@ module Deployinator
         begin
           # take application offline (maintenance mode)
           # return true so command is non-fatal (artisan doesn't exist the first time)
-          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"}
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{prod_path} && /usr/bin/php artisan down || true"}
 
           # sync new app contents
-          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip}:#{site_path}"}
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip}:#{prod_path}"}
 
           # generate optimized autoload files
-          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{prod_path} && /usr/local/bin/composer dump-autoload -o"}
 
           # run database migrations
-          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force --seed"}
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{prod_path} && /usr/bin/php artisan migrate --force --seed"}
 
           # take application online
-          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{site_path} && /usr/bin/php artisan up"}
+          run_cmd %Q{ssh #{cymbaltapregnancyregistry_user}@#{cymbaltapregnancyregistry_prod_ip} "cd #{prod_path} && /usr/bin/php artisan up"}
 
           log_and_stream "Done!<br>"
         rescue
