@@ -71,6 +71,9 @@ module Deployinator
           # sync new app contents
           run_cmd %Q{rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter "protect .env" --filter "protect down" --filter "protect vendor/" --filter "protect storage/*/**" #{<%= stack %>_git_checkout_path}/ #{<%= stack %>_user}@#{<%= stack %>_stage_ip}:#{site_path}}
 
+          # ensure necessary laravel storage subdirs exist
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "mkdir -p #{site_path}/storage/framework/{cache,sessions,views}"}
+
           # install dependencies
           run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "cd #{site_path} && /usr/local/bin/composer install --no-dev"}
 
@@ -100,6 +103,9 @@ module Deployinator
 
           # sync new app contents
           run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='storage/*/**' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect storage/*/**' #{site_path}/ #{<%= stack %>_user}@#{<%= stack %>_prod_ip}:#{site_path}"}
+
+          # ensure necessary laravel storage subdirs exist
+          run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "mkdir -p #{site_path}/storage/framework/{cache,sessions,views}"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{<%= stack %>_user}@#{<%= stack %>_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
