@@ -95,13 +95,14 @@ module Deployinator
           # take application offline (maintenance mode)
           run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/bin/php artisan down || true"} # return true so command is non-fatal (artisan doesn't exist the first time)
 
-          # TODO figure out how to keep from deleting xfactoradvertising/app/storage/meta/down (which enables the site)
-
           # sync new app contents
-          run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip}:#{site_root}}
+          run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_stage_ip} "rsync -ave ssh --delete --force --exclude='storage/*/*/**' --exclude='vendor/' --exclude='.git/' --exclude='.gitignore' --exclude='.env' --filter 'protect .env' --filter 'protect down' --filter 'protect vendor/' --filter 'protect storage/*/**' #{site_path}/ #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip}:#{site_path}"}
+
+          # old version of command (prior to deployinator move to util0)
+          # run_cmd %Q{rsync -ave ssh --delete --force --delete-excluded #{site_path} #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip}:#{site_root}}
 
           # run database migrations
-          #run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
+          run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/bin/php artisan migrate --force"}
 
           # generate optimized autoload files
           run_cmd %Q{ssh #{xfactoradvertising_prod_user}@#{xfactoradvertising_prod_ip} "cd #{site_path} && /usr/local/bin/composer dump-autoload -o"}
